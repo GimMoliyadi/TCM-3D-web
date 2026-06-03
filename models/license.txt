@@ -1,0 +1,11 @@
+Model Information:
+* title:	Base Mesh
+* source:	https://sketchfab.com/3d-models/base-mesh-b93d00ae142449c8860ef79755a1c66c
+* author:	Navirobot (https://sketchfab.com/Navirobot)
+
+Model License:
+* license type:	CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
+* requirements:	Author must be credited. Commercial use is allowed.
+
+If you use this 3D model in your project be sure to copy paste this credit wherever you share it:
+This work is based on "Base Mesh" (https://sketchfab.com/3d-models/base-mesh-b93d00ae142449c8860ef79755a1c66c) by Navirobot (https://sketchfab.com/Navirobot) licensed under CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
