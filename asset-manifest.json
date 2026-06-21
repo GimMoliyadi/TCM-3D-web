@@ -1,13 +1,13 @@
 {
   "files": {
-    "main.css": "static/css/main.a0772c54.css",
-    "main.js": "static/js/main.50ab8116.js",
-    "index.html": "index.html",
-    "main.a0772c54.css.map": "static/css/main.a0772c54.css.map",
-    "main.50ab8116.js.map": "static/js/main.50ab8116.js.map"
+    "main.css": "/TCM-3D-web/static/css/main.39bbc72e.css",
+    "main.js": "/TCM-3D-web/static/js/main.d2100619.js",
+    "index.html": "/TCM-3D-web/index.html",
+    "main.39bbc72e.css.map": "/TCM-3D-web/static/css/main.39bbc72e.css.map",
+    "main.d2100619.js.map": "/TCM-3D-web/static/js/main.d2100619.js.map"
   },
   "entrypoints": [
-    "static/css/main.a0772c54.css",
-    "static/js/main.50ab8116.js"
+    "static/css/main.39bbc72e.css",
+    "static/js/main.d2100619.js"
   ]
 }
