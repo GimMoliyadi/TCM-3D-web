@@ -1,1 +1,52 @@
-<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/><meta name="description" content="TCM 3D 中医穴位可视化 - 在 3D 人体模型上查看穴位位置与详情"/><title>TCM 3D 中医穴位</title><link rel="preload" href="/TCM-3D-web/models/human_body.glb" as="fetch" crossorigin><link rel="preload" href="/TCM-3D-web/draco/draco_decoder.wasm" as="fetch" crossorigin><link rel="preload" href="/TCM-3D-web/draco/draco_wasm_wrapper.js" as="script"><link rel="dns-prefetch" href="https://www.gstatic.com"><style>body{margin:0;padding:0;overflow:hidden;background:#0f172a}#root{width:100vw;height:100vh}.boot-loading{position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;background:#0f172a;color:#e2e8f0;font:16px/1.6 system-ui,-apple-system,sans-serif;text-align:center}.boot-loading strong{display:block;color:#67e8f9;font-size:20px;margin-bottom:8px}.boot-loading span{display:block;color:#94a3b8;font-size:14px}.boot-loading .spinner{width:40px;height:40px;margin:0 auto 16px;border:3px solid #1e293b;border-top:3px solid #22d3ee;border-radius:50%;animation:spin 1s linear infinite}@keyframes spin{to{transform:rotate(360deg)}}</style><script defer="defer" src="/TCM-3D-web/static/js/main.ae2dba28.js"></script><link href="/TCM-3D-web/static/css/main.2a2c8a65.css" rel="stylesheet"></head><body><div class="medical-disclaimer" role="note" aria-label="医疗免责声明"><strong>免责声明</strong> 本网站内容仅供日常小症状的穴位参考与学习了解，不能代替系统学习中医，也不能代替医院诊断、治疗或医生建议。如有不适，请及时就医。</div><div class="boot-loading" id="boot-loading"><div><div class="spinner"></div><strong>3D 穴位模型加载中</strong> <span>模型文件较大，首次打开可能需要几十秒，请稍等。</span></div></div><div id="root"></div><script>window.addEventListener("load",function(){var e=document.getElementById("boot-loading");e&&e.remove()})</script></body></html>
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/><meta name="description" content="TCM 3D 中医穴位可视化 - 在 3D 人体模型上查看穴位位置与详情"/><title>TCM 3D 中医穴位</title><link rel="preload" href="/TCM-3D-web/models/human_body.glb" as="fetch" crossorigin><link rel="preload" href="/TCM-3D-web/hdri/studio_small_03_1k.hdr" as="fetch" crossorigin><link rel="preload" href="/TCM-3D-web/draco/draco_decoder.wasm" as="fetch" crossorigin><link rel="preload" href="/TCM-3D-web/draco/draco_wasm_wrapper.js" as="script"><style>
+/* 免责声明占一行高度，用 flex 列布局把它和 #root 分开排，
+   避免 #root 顶着 100vh 被挤到视口外（原来底部按钮会被裁掉一截）。 */
+html,body{margin:0;padding:0;height:100%}
+body{overflow:hidden;background:#0f172a;display:flex;flex-direction:column}
+.medical-disclaimer{flex:0 0 auto;padding:5px 14px;background:#111c33;border-bottom:1px solid #1e293b;color:#94a3b8;font:12px/1.6 system-ui,-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;text-align:center}
+.medical-disclaimer strong{color:#f59e0b;margin-right:6px}
+#root{flex:1 1 auto;min-height:0;width:100%}
+.boot-loading{position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;background:#0f172a;color:#e2e8f0;font:16px/1.6 system-ui,-apple-system,sans-serif;text-align:center}
+.boot-loading strong{display:block;color:#67e8f9;font-size:20px;margin-bottom:8px}
+.boot-loading span{display:block;color:#94a3b8;font-size:14px}
+.boot-loading .spinner{width:40px;height:40px;margin:0 auto 16px;border:3px solid #1e293b;border-top:3px solid #22d3ee;border-radius:50%;animation:spin 1s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+</style><script defer="defer" src="/TCM-3D-web/static/js/main.ae2dba28.js"></script><link href="/TCM-3D-web/static/css/main.2a2c8a65.css" rel="stylesheet"></head><body><div class="medical-disclaimer" role="note" aria-label="医疗免责声明"><strong>免责声明</strong> 本网站内容仅供日常小症状的穴位参考与学习了解，不能代替系统学习中医，也不能代替医院诊断、治疗或医生建议。如有不适，请及时就医。</div><div class="boot-loading" id="boot-loading"><div><div class="spinner"></div><strong>3D 穴位模型加载中</strong> <span>模型文件较大，首次打开可能需要几十秒，请稍等。</span></div></div><div id="root"></div><script>
+/* 启动兜底：只有 React 真正挂载出内容才撤掉加载层；
+   否则（脚本报错 / 资源 404 / 网络或代理故障）给出可读提示，不留白屏。 */
+(function () {
+  var MAX_WAIT = 15000, t0 = Date.now();
+  function mounted() {
+    var r = document.getElementById("root");
+    return !!(r && r.childElementCount > 0);
+  }
+  function dropOverlay() {
+    var el = document.getElementById("boot-loading");
+    if (el && el.parentNode) el.parentNode.removeChild(el);
+  }
+  function failed(msg) {
+    var el = document.getElementById("boot-loading");
+    if (!el) return;
+    el.innerHTML =
+      '<div style="max-width:520px;padding:0 24px">' +
+      '<div style="font-size:34px;line-height:1;margin-bottom:12px">\u26a0\ufe0f</div>' +
+      '<strong>3D 模型加载失败</strong>' +
+      '<span>' + msg + '</span>' +
+      '<button onclick="location.reload()" style="margin-top:18px;background:#06b6d4;color:#062b33;' +
+      'border:none;border-radius:10px;padding:10px 22px;font-size:15px;font-weight:700;cursor:pointer">' +
+      '刷新重试</button></div>';
+  }
+  window.addEventListener("error", function (e) {
+    if (!mounted()) {
+      failed("页面脚本执行出错：" + (e.message || "未知错误") + "。若与网络或代理有关，请检查后刷新重试。");
+    }
+  }, true);
+  var timer = setInterval(function () {
+    if (mounted()) { clearInterval(timer); dropOverlay(); return; }
+    if (Date.now() - t0 > MAX_WAIT) {
+      clearInterval(timer);
+      failed("等待超过 15 秒仍未完成加载。模型文件较大，请检查网络或代理后刷新重试。");
+    }
+  }, 400);
+})();
+</script></body></html>
