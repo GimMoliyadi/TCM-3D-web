@@ -1,0 +1,44 @@
+name: Backend tests
+
+on:
+  push:
+    branches:
+      - feature/sqlite-fastapi-backend
+  pull_request:
+    paths:
+      - "backend/**"
+      - "source/data/acupoints_data.json"
+      - ".github/workflows/backend-tests.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: backend/requirements.txt
+      - name: Install dependencies
+        run: pip install -r backend/requirements.txt
+      - name: Generate SQLite database
+        run: python -m backend.migrate
+      - name: Verify generated database
+        run: |
+          python - <<'PY'
+          import sqlite3
+          from pathlib import Path
+
+          path = Path("backend/acupoints.db")
+          assert path.exists(), "acupoints.db was not generated"
+          with sqlite3.connect(path) as connection:
+              count = connection.execute("SELECT COUNT(*) FROM acupoints").fetchone()[0]
+          assert count == 290, f"expected 290 rows, got {count}"
+          print(f"verified {path}: {count} rows")
+          PY
+      - name: Run tests
+        run: pytest -q backend/tests
