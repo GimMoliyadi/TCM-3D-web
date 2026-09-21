@@ -4,10 +4,16 @@ import { OrbitControls, useGLTF, Environment, Html, useProgress } from '@react-t
 import * as THREE from 'three';
 import gsap from 'gsap';
 import { BookOpen, ClipboardList, FolderOpen, Menu, Search, MousePointerClick, Mouse, ChevronLeft, MapPin, Stethoscope, ChevronRight, Lightbulb, X, Sparkles, HandHeart, TriangleAlert, Pin, Crosshair, List, Hash, ArrowRight } from 'lucide-react';
+import SceneErrorBoundary from './components/SceneErrorBoundary';
+import DietaryLayer from './components/dietary/DietaryLayer';
+import DietaryPanel from './components/dietary/DietaryPanel';
+import { relationsForTarget, anchorFor } from './utils/dietaryRelations';
+import './components/dietary/dietary.css';
 import acupointsData from './data/acupoints_data.json';
 import { bodyPartCategories, symptomCategories } from './data/acupoint_categories';
 
-// 配置 Draco 解码器走 CDN，加速首次加载
+// 与正式产物一致，使用仓库自带 Draco 解码器
+useGLTF.setDecoderPath('./draco/');
 useGLTF.preload('./models/human_body.glb');
 
 function CameraController({ controlsRef, activePoint, modelInfo, modelReady }) {
@@ -141,7 +147,7 @@ function AcupointNode({ pt, isActive, hasActivePoint, onSelect }) {
   );
 }
 
-function TCMModelWithPoints({ scene, activePoint, onSelect, modelInfo, onReady }) {
+function TCMModelWithPoints({ scene, activePoint, onSelect, modelInfo, onReady, dietaryMode, dietaryTarget, onDietarySelect }) {
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
@@ -196,8 +202,9 @@ function TCMModelWithPoints({ scene, activePoint, onSelect, modelInfo, onReady }
     <group position={[-center.x * scale, -center.y * scale, -center.z * scale]} scale={scale}>
       <primitive object={scene} />
       {acupointsData.map((pt, i) => (
-        <AcupointNode key={i} pt={pt} isActive={activePoint?.name === pt.name} hasActivePoint={!!activePoint} onSelect={onSelect} />
+        <AcupointNode key={i} pt={pt} isActive={!dietaryMode && activePoint?.name === pt.name} hasActivePoint={dietaryMode || !!activePoint} onSelect={dietaryMode ? () => {} : onSelect} />
       ))}
+      {dietaryMode && <DietaryLayer points={acupointsData} selected={dietaryTarget} onSelect={onDietarySelect}/>}
     </group>
   );
 }
@@ -456,6 +463,16 @@ function CategoryMenu({ onSelectPoint, activePoint, isOpen, onToggle }) {
 }
 
 export default function App() {
+  const [mode, setMode] = useState('acupoints');
+  const [dietaryTarget, setDietaryTarget] = useState(null);
+  const [foodId, setFoodId] = useState(null);
+  const [dietaryPoint, setDietaryPoint] = useState(null);
+  const openDietaryTarget = target => {
+    const point = anchorFor(relationsForTarget(target)[0], acupointsData);
+    setDietaryTarget(target); setFoodId(null);
+    setDietaryPoint(point ? {...point} : null);
+  };
+  const changeMode = next => {setMode(next); setIsMenuOpen(false); setSearchTerm(''); setIsGuideOpen(false); if(next === 'dietary') {openDietaryTarget('肝'); setDietaryTarget(null);}};
   const [activePoint, setActivePoint] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [searchResults, setSearchResults] = useState([]);
@@ -476,6 +493,8 @@ export default function App() {
   const handleModelReady = useCallback(() => setModelReady(true), []);
 
   const resetCamera = useCallback(() => {
+    setDietaryPoint(null);
+    setDietaryTarget(null);
     setActivePoint(null);
     if (controlsRef.current && modelInfoRef.current.ready) {
       const m = modelInfoRef.current;
@@ -516,8 +535,11 @@ export default function App() {
   }, [searchTerm]);
 
   return (
-    <div className="fixed inset-0 flex bg-[#0f172a] overflow-hidden font-sans">
+    <div className={`fixed inset-0 flex bg-[#0f172a] overflow-hidden font-sans ${mode === 'dietary' ? 'dietary-mode' : ''}`}>
+      <nav className="dietary-switch" aria-label="知识模式"><button aria-pressed={mode === 'acupoints'} onClick={() => changeMode('acupoints')}>穴位</button><button aria-pressed={mode === 'dietary'} onClick={() => changeMode('dietary')}>食养</button></nav>
+      {mode === 'dietary' && dietaryTarget && <DietaryPanel target={dietaryTarget} foodId={foodId} onFood={setFoodId} onTarget={openDietaryTarget} onClose={() => setDietaryTarget(null)}/>}
       {/* 分类菜单 */}
+      {mode === 'acupoints' && <>
       <CategoryMenu
         onSelectPoint={(pt) => setActivePoint(pt)}
         activePoint={activePoint}
@@ -543,19 +565,21 @@ export default function App() {
          )}
       </div>
 
-      <div className="flex-1 relative min-h-0" style={{ position: 'absolute', inset: 0 }} onPointerMissed={() => setActivePoint(null)}>
+      </>}
+      <div className={`dietary-viewport flex-1 relative min-h-0 ${dietaryTarget ? '' : 'panel-closed'}`} style={{ position: 'absolute', inset: 0 }} onPointerMissed={() => setActivePoint(null)}>
         <Canvas style={{ position: 'absolute', inset: 0, width: '100%', height: '100%' }} camera={{ position: [0, 0, 22], fov: 50 }}>
           <ambientLight intensity={0.6} />
           <directionalLight position={[10, 15, 20]} intensity={1.5} color="#ffffff" />
           <directionalLight position={[-10, 5, 10]} intensity={0.6} color="#cbd5e1" />
-          <Environment preset="studio" />
+          <SceneErrorBoundary fallback={null}><Suspense fallback={null}><Environment files="./hdri/studio_small_03_1k.hdr" /></Suspense></SceneErrorBoundary>
           <Suspense fallback={<LoaderFallback />}>
-             <SceneLoader modelInfo={modelInfoRef.current} onReady={handleModelReady} activePoint={activePoint} onSelect={(pt) => setActivePoint(pt)} />
+             <SceneLoader dietaryMode={mode === 'dietary'} dietaryTarget={dietaryTarget} onDietarySelect={openDietaryTarget} modelInfo={modelInfoRef.current} onReady={handleModelReady} activePoint={activePoint} onSelect={(pt) => setActivePoint(pt)} />
           </Suspense>
-          <CameraController controlsRef={controlsRef} activePoint={activePoint} modelInfo={modelInfoRef.current} modelReady={modelReady} />
+          <CameraController controlsRef={controlsRef} activePoint={mode === 'dietary' ? dietaryPoint : activePoint} modelInfo={modelInfoRef.current} modelReady={modelReady} />
         </Canvas>
       </div>
 
+      {mode === 'acupoints' && <>
       <div className={`absolute top-0 right-0 h-full w-80 md:w-96 max-sm:w-full transition-transform duration-500 ease-out z-40 shadow-2xl pointer-events-auto ${activePoint ? 'translate-x-0' : 'translate-x-full'}`}>
         <div className="w-full h-full bg-[#1e293b] border-l border-slate-700 flex flex-col pt-24 px-6 relative">
           <button onClick={() => setActivePoint(null)} className="absolute top-6 right-6 w-10 h-10 flex items-center justify-center rounded-full bg-slate-800 hover:bg-red-500 text-white transition-colors z-50 cursor-pointer shadow-lg"><X className="w-5 h-5" /></button>
@@ -605,9 +629,10 @@ export default function App() {
         onToggle={() => setIsGuideOpen(!isGuideOpen)}
       />
 
+      </>}
       {/* 重置视角按钮 */}
       <button
-        onClick={resetCamera}
+        onClick={() => {if(mode === 'dietary') {setDietaryPoint(null); setDietaryTarget(null);} resetCamera();}}
         className="absolute bottom-4 left-4 z-50 flex items-center gap-2 px-3 py-2 rounded-lg bg-slate-800/90 hover:bg-slate-700 text-white transition-all shadow-lg"
         title="重置视角 (ESC)"
       >

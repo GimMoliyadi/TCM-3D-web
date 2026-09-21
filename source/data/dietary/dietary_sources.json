@@ -1,0 +1,47 @@
+[
+  {
+    "id": "source-xiaomai",
+    "book": "食疗本草",
+    "chapter": "卷下",
+    "entry": "小麦〈平〉",
+    "quote": "养肝气，煮饮服之良。服之止渴。",
+    "repository": "jobkoko/tcm-database",
+    "path": "tcm/B-006-食疗本草.txt",
+    "url": "https://github.com/jobkoko/tcm-database/blob/4d4aefd805604176541052ae0d8f6f8b0a17a314/tcm/B-006-食疗本草.txt#L2461",
+    "sourceKind": "classical_text",
+    "verification": "已核对仓库电子文本；未经纸本校勘，非现代疗效验证",
+    "fileSha256": "0d39bdce5697129c4250b58c7ac4a54c4a1dae91ab310079d7cef45e23d50605",
+    "line": 2461,
+    "repositoryRef": "4d4aefd805604176541052ae0d8f6f8b0a17a314"
+  },
+  {
+    "id": "source-jingmi",
+    "book": "饮膳正要",
+    "chapter": "卷第二",
+    "entry": "五味偏走",
+    "quote": "肝病禁食辛，宜食粳米、牛肉、葵菜之类。",
+    "repository": "garychowcmu/daizhigev20",
+    "path": "医藏/饮膳正要.txt",
+    "url": "https://github.com/garychowcmu/daizhigev20/blob/4a6d6f2088825f132521d848c2ea86cf9c9a7620/医藏/饮膳正要.txt#L1649",
+    "sourceKind": "classical_text",
+    "verification": "已核对仓库电子文本；未经纸本校勘，非现代疗效验证",
+    "fileSha256": "17e171f65242b0917ebcb37d3bf9bd29cc935e1b7181e0d035e12804295de55a",
+    "line": 1649,
+    "repositoryRef": "4a6d6f2088825f132521d848c2ea86cf9c9a7620"
+  },
+  {
+    "id": "source-niurou",
+    "book": "饮膳正要",
+    "chapter": "卷第二",
+    "entry": "五味偏走",
+    "quote": "肝病禁食辛，宜食粳米、牛肉、葵菜之类。",
+    "repository": "garychowcmu/daizhigev20",
+    "path": "医藏/饮膳正要.txt",
+    "url": "https://github.com/garychowcmu/daizhigev20/blob/4a6d6f2088825f132521d848c2ea86cf9c9a7620/医藏/饮膳正要.txt#L1649",
+    "sourceKind": "classical_text",
+    "verification": "已核对仓库电子文本；未经纸本校勘，非现代疗效验证",
+    "fileSha256": "17e171f65242b0917ebcb37d3bf9bd29cc935e1b7181e0d035e12804295de55a",
+    "line": 1649,
+    "repositoryRef": "4a6d6f2088825f132521d848c2ea86cf9c9a7620"
+  }
+]

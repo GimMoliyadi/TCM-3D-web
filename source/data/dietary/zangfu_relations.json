@@ -1,0 +1,41 @@
+[
+  {
+    "id": "rel-xiaomai-gan",
+    "foodId": "xiaomai",
+    "target": "肝",
+    "relationType": "traditional_dietary_association",
+    "description": "古籍在小麦条目中记有“养肝气”，这里保留其与中医肝概念的传统关联。",
+    "anchorAcupointId": "肝俞穴",
+    "sourceIds": [
+      "source-xiaomai"
+    ],
+    "confidence": "source_verified",
+    "context": "传统食养"
+  },
+  {
+    "id": "rel-jingmi-gan",
+    "foodId": "jingmi",
+    "target": "肝",
+    "relationType": "traditional_dietary_association",
+    "description": "古籍在“五味偏走”的饮食宜忌论述中，将粳米列入传统肝病语境下的宜食之物。",
+    "anchorAcupointId": "肝俞穴",
+    "sourceIds": [
+      "source-jingmi"
+    ],
+    "confidence": "source_verified",
+    "context": "传统食忌／宜食记载"
+  },
+  {
+    "id": "rel-niurou-gan",
+    "foodId": "niurou",
+    "target": "肝",
+    "relationType": "traditional_dietary_association",
+    "description": "古籍在“五味偏走”的饮食宜忌论述中，将牛肉列入传统肝病语境下的宜食之物。",
+    "anchorAcupointId": "肝俞穴",
+    "sourceIds": [
+      "source-niurou"
+    ],
+    "confidence": "source_verified",
+    "context": "传统食忌／宜食记载"
+  }
+]
