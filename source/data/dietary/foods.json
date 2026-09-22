@@ -1,0 +1,35 @@
+[
+  {
+    "id": "xiaomai",
+    "name": "小麦",
+    "aliases": [],
+    "category": "grain",
+    "summary": "本条仅展示已核对古籍中的传统饮食知识。",
+    "sourceIds": [
+      "source-xiaomai"
+    ],
+    "notes": "历史记载不构成现代肝病饮食处方，也不能据此推断治疗效果；未从本条原文确认的性味、用量和宜忌不补写。"
+  },
+  {
+    "id": "jingmi",
+    "name": "粳米",
+    "aliases": [],
+    "category": "grain",
+    "summary": "本条仅展示已核对古籍中的传统饮食知识。",
+    "sourceIds": [
+      "source-jingmi"
+    ],
+    "notes": "历史记载不构成现代肝病饮食处方，也不能据此推断治疗效果；未从本条原文确认的性味、用量和宜忌不补写。"
+  },
+  {
+    "id": "niurou",
+    "name": "牛肉",
+    "aliases": [],
+    "category": "meat",
+    "summary": "本条仅展示已核对古籍中的传统饮食知识。",
+    "sourceIds": [
+      "source-niurou"
+    ],
+    "notes": "历史记载不构成现代肝病饮食处方，也不能据此推断治疗效果；未从本条原文确认的性味、用量和宜忌不补写。"
+  }
+]

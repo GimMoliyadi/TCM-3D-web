@@ -1,0 +1,11 @@
+import foods from '../data/dietary/foods.json';
+import relations from '../data/dietary/zangfu_relations.json';
+import sources from '../data/dietary/dietary_sources.json';
+export { foods, relations };
+export const relationsForTarget = target => relations.filter(r => r.target === target);
+export const relationsForFood = foodId => relations.filter(r => r.foodId === foodId);
+export const foodById = id => foods.find(f => f.id === id);
+export const sourcesFor = relation => relation.sourceIds.map(id => sources.find(s => s.id === id)).filter(Boolean);
+export const anchorFor = (relation, points) => points.find(p => p.id === relation.anchorAcupointId);
+export const searchFoods = query => foods.filter(f => [f.name,...f.aliases].some(s => s.includes(query.trim())));
+export const anchorNotice = '该位置仅作为中医知识的空间导航锚点，并不表示食物在现代解剖意义上直接作用于该穴位或器官。';
