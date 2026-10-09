@@ -1,5 +1,7 @@
 # 食养版本正式发布
 
+> **历史记录说明（重要）**：本文记录一次已经完成的历史 GitHub Pages 发布及其授权、提交和回滚事实，不是当前阶段的发布授权。现行工程由 `source/index.html` 构建到独立 `dist/`；根 `index.html`、`static/`、`asset-manifest.json` 仍作为 Pages 快照维护，本阶段不覆盖、不推送、不部署。请先阅读 [工程阶段进度](engineering-progress.md) 和 [根目录 README](../README.md)；任何新的线上变更都必须获得单独授权并经过发布验收。
+
 用户在完成独立分支验收后明确要求“直接更新站点”，本次据此更新 main 的 GitHub Pages 入口。此前开发文档中的“不发布”状态是首次验收记录，本次授权已覆盖该限制。
 
 - 以食养分支 0bffd56 为源码基线；原 main 为 b569fa1。

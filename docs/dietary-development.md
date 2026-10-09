@@ -1,5 +1,7 @@
 # 食养知识层：肝的纵向切片
 
+> **历史文档说明（重要）**：本文记录食养功能最初在 `feature/dietary-nourishment-layer` 分支上的开发与验收事实，文中的 `dev.html`、`dev-dist/`、分支基线和“不发布”约束均属于当时流程。当前工程已统一为 `source/index.html` + Vite `dist/`；请以 [工程阶段进度](engineering-progress.md)、[根目录 README](../README.md) 和 [升级规划](upgrade-plan.md) 作为现行流程。本文后续内容保留原始记录，不作为新的构建或发布指令。
+
 开发分支：`feature/dietary-nourishment-layer`。基线：`b569fa1b52a8cef4329a6e801564ce5fce580ac7`。
 
 ## 运行
