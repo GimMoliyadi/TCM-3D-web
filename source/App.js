@@ -9,8 +9,16 @@ import DietaryLayer from './components/dietary/DietaryLayer';
 import DietaryPanel from './components/dietary/DietaryPanel';
 import { relationsForTarget, anchorFor } from './utils/dietaryRelations';
 import './components/dietary/dietary.css';
-import acupointsData from './data/acupoints_data.json';
+import rawAcupointsData from './data/acupoints_data.json';
 import { bodyPartCategories, symptomCategories } from './data/acupoint_categories';
+import { buildAcupointCatalog, resolveCategory } from './utils/acupointCatalog.mjs';
+
+const acupointCatalog = buildAcupointCatalog(rawAcupointsData);
+const acupointsData = acupointCatalog.points;
+const resolvedCategories = {
+  body: bodyPartCategories.map(category => ({ ...category, ...resolveCategory(category, acupointCatalog) })),
+  symptom: symptomCategories.map(category => ({ ...category, ...resolveCategory(category, acupointCatalog) })),
+};
 
 // 与正式产物一致，使用仓库自带 Draco 解码器
 useGLTF.setDecoderPath('./draco/');
@@ -201,8 +209,8 @@ function TCMModelWithPoints({ scene, activePoint, onSelect, modelInfo, onReady, 
   return (
     <group position={[-center.x * scale, -center.y * scale, -center.z * scale]} scale={scale}>
       <primitive object={scene} />
-      {acupointsData.map((pt, i) => (
-        <AcupointNode key={i} pt={pt} isActive={!dietaryMode && activePoint?.name === pt.name} hasActivePoint={dietaryMode || !!activePoint} onSelect={dietaryMode ? () => {} : onSelect} />
+      {acupointsData.map(pt => (
+        <AcupointNode key={pt.id} pt={pt} isActive={!dietaryMode && activePoint?.id === pt.id} hasActivePoint={dietaryMode || !!activePoint} onSelect={dietaryMode ? () => {} : onSelect} />
       ))}
       {dietaryMode && <DietaryLayer points={acupointsData} selected={dietaryTarget} onSelect={onDietarySelect}/>}
     </group>
@@ -347,14 +355,7 @@ function CategoryMenu({ onSelectPoint, activePoint, isOpen, onToggle }) {
     setExpandedCategory(expandedCategory === categoryId ? null : categoryId);
   };
 
-  const handlePointClick = (pointName) => {
-    const point = acupointsData.find(p => p.name === pointName);
-    if (point) {
-      onSelectPoint(point);
-    }
-  };
-
-  const categories = activeTab === 'body' ? bodyPartCategories : symptomCategories;
+  const categories = resolvedCategories[activeTab];
 
   return (
     <>
@@ -375,7 +376,7 @@ function CategoryMenu({ onSelectPoint, activePoint, isOpen, onToggle }) {
 
       {/* 菜单面板 */}
       <div className={`absolute top-0 left-0 h-full w-72 max-sm:w-full bg-slate-900/95 backdrop-blur-xl border-r border-slate-700 z-40 transition-transform duration-300 ${isOpen ? 'translate-x-0' : '-translate-x-full'}`}>
-        <div className="pt-20 px-4 h-full flex flex-col">
+        <div className="pt-36 px-4 h-full flex flex-col">
           {/* 标签切换 */}
           <div className="flex mb-4 bg-slate-800 rounded-lg p-1">
             <button
@@ -395,10 +396,11 @@ function CategoryMenu({ onSelectPoint, activePoint, isOpen, onToggle }) {
           {/* 分类列表 */}
           <div className="flex-1 overflow-y-auto custom-scrollbar pr-2">
             {categories.map(category => (
-              <div key={category.id} className="mb-2">
+              <div key={category.id} data-category-id={category.id} className="mb-2">
                 {/* 分类标题 */}
                 <button
                   onClick={() => toggleCategory(category.id)}
+                  aria-expanded={expandedCategory === category.id}
                   className="w-full flex items-center justify-between px-3 py-2.5 bg-slate-800/50 hover:bg-slate-800 rounded-lg transition-colors"
                 >
                   <div className="flex items-center gap-2">
@@ -409,8 +411,8 @@ function CategoryMenu({ onSelectPoint, activePoint, isOpen, onToggle }) {
                     )}
                   </div>
                   <div className="flex items-center gap-2">
-                    <span className="text-xs text-slate-500 bg-slate-700 px-2 py-0.5 rounded-full">
-                      {category.points.length}
+                    <span aria-label={`${category.availablePoints.length} 个可定位穴位`} title="可定位穴位数" className="text-xs text-slate-400 bg-slate-700 px-2 py-0.5 rounded-full">
+                      {category.availablePoints.length}
                     </span>
                     <ChevronRight className={`w-4 h-4 text-slate-400 transition-transform ${expandedCategory === category.id ? 'rotate-90' : ''}`} />
                   </div>
@@ -419,22 +421,21 @@ function CategoryMenu({ onSelectPoint, activePoint, isOpen, onToggle }) {
                 {/* 穴位列表 */}
                 {expandedCategory === category.id && (
                   <div className="mt-1 ml-4 space-y-1">
-                    {category.points.map(pointName => {
-                      const point = acupointsData.find(p => p.name === pointName);
-                      if (!point) return null;
-                      const isActive = activePoint?.name === pointName;
+                    {category.availablePoints.map(point => {
+                      const isActive = activePoint?.id === point.id;
 
                       return (
                         <button
-                          key={pointName}
-                          onClick={() => handlePointClick(pointName)}
+                          key={point.id}
+                          data-acupoint-id={point.id}
+                          onClick={() => onSelectPoint(point)}
                           className={`w-full text-left px-3 py-2 rounded-md text-sm transition-colors ${isActive
                             ? 'bg-cyan-600/30 text-cyan-400 border border-cyan-500/50'
                             : 'text-slate-300 hover:bg-slate-800 hover:text-white'
                           }`}
                         >
                           <div className="flex items-center justify-between">
-                            <span>{pointName}</span>
+                            <span>{point.name}</span>
                             {point.efficacy && (
                               <span className="text-xs text-slate-500 truncate ml-2 max-w-[120px]">
                                 {point.efficacy.split('，')[0]}
@@ -444,6 +445,15 @@ function CategoryMenu({ onSelectPoint, activePoint, isOpen, onToggle }) {
                         </button>
                       );
                     })}
+                    {category.unavailableNames.length > 0 && (
+                      <details className="px-3 py-2 text-xs text-slate-400">
+                        <summary className="cursor-pointer">{category.unavailableNames.length} 项待补充</summary>
+                        <p className="mt-2">这些名称尚未匹配到现有定位记录，暂不能定位。</p>
+                        <ul className="mt-2 space-y-1">
+                          {category.unavailableNames.map(name => <li key={name}>{name} · 待补充</li>)}
+                        </ul>
+                      </details>
+                    )}
                   </div>
                 )}
               </div>
@@ -547,7 +557,7 @@ export default function App() {
         onToggle={() => setIsMenuOpen(!isMenuOpen)}
       />
 
-      <div className={`absolute top-6 z-50 w-11/12 max-w-md transition-all duration-300 ${isMenuOpen ? 'left-72 ml-4 max-sm:left-4 max-sm:ml-0 max-sm:w-[calc(100vw-2rem)]' : 'left-1/2 -translate-x-1/2'}`}>
+      <div className={`absolute top-6 z-50 w-11/12 max-w-md max-sm:left-20 max-sm:translate-x-0 max-sm:w-[calc(100%-6rem)] transition-all duration-300 ${isMenuOpen ? 'left-72 ml-4 max-sm:hidden' : 'left-1/2 -translate-x-1/2'}`}>
          <div className="bg-[#1e293b]/80 backdrop-blur-xl border border-slate-600 rounded-2xl shadow-2xl flex items-center px-5 py-3 transition-all focus-within:bg-[#1e293b] focus-within:border-cyan-500">
             <span className="text-cyan-400 mr-3 text-lg">🔍</span>
             <input type="text" placeholder="搜索穴位名称..." className="bg-transparent border-none outline-none text-white w-full placeholder-slate-400 text-lg" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
@@ -555,11 +565,11 @@ export default function App() {
          </div>
          {searchResults.length > 0 && (
             <div className="mt-3 bg-[#1e293b]/95 backdrop-blur-xl border border-slate-600 rounded-xl shadow-2xl max-h-72 overflow-y-auto custom-scrollbar">
-               {searchResults.map((pt, i) => (
-                  <div key={i} className="px-5 py-4 hover:bg-cyan-900/40 cursor-pointer text-slate-200 transition-colors border-b border-slate-700/50 last:border-b-0 flex flex-col gap-1" onClick={() => { setActivePoint(pt); setSearchTerm(''); setSearchResults([]); }}>
+               {searchResults.map(pt => (
+                  <button key={pt.id} data-acupoint-id={pt.id} className="w-full text-left px-5 py-4 hover:bg-cyan-900/40 cursor-pointer text-slate-200 transition-colors border-b border-slate-700/50 last:border-b-0 flex flex-col gap-1" onClick={() => { setActivePoint(pt); setSearchTerm(''); setSearchResults([]); }}>
                      <div className="font-bold text-white text-lg">{pt.name}</div>
-                     <div className="text-sm text-slate-400 truncate w-full">{pt.text || '暂无描述信息'}</div>
-                  </div>
+                     <div className="text-sm text-slate-400 truncate w-full">{pt.text || pt.location || '暂无描述信息'}</div>
+                  </button>
                ))}
             </div>
          )}

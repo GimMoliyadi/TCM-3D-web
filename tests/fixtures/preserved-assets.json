@@ -1,0 +1,187 @@
+{
+  "schemaVersion": 1,
+  "sourceRevision": "4614879bc908b0b00b8ef4cf52cb2c3e8ec4df17",
+  "textNormalization": "CRLF to LF before hashing text entries",
+  "files": [
+    {
+      "mode": "100644",
+      "path": "asset-manifest.json",
+      "kind": "text",
+      "sha256": "aa49b998f81767556497e43fb0b8494de7a445a6e3e04c178783d42eb57fe779"
+    },
+    {
+      "mode": "100644",
+      "path": "draco/draco_decoder.js",
+      "kind": "text",
+      "sha256": "30e4d486fa020737af10e3c56197693e5b904bdc05b8bfa5d7b06751dec6da04"
+    },
+    {
+      "mode": "100644",
+      "path": "draco/draco_decoder.wasm",
+      "kind": "binary",
+      "sha256": "c55a594e8ffd18426d36b27fea9618af3df5e173640a3e56d46f09d76f0574f2"
+    },
+    {
+      "mode": "100644",
+      "path": "draco/draco_wasm_wrapper.js",
+      "kind": "text",
+      "sha256": "e8049906ef3f8f75d3456c22a3f31bfdfe5b5b5bd09ccdec613b9e9a49d554d8"
+    },
+    {
+      "mode": "100644",
+      "path": "draco/gltf/draco_decoder.js",
+      "kind": "text",
+      "sha256": "8625489da79a805f4f2a7d511c3e52d8b4085608a9d2a4d5f4f9de5db0aea04f"
+    },
+    {
+      "mode": "100644",
+      "path": "draco/gltf/draco_decoder.wasm",
+      "kind": "binary",
+      "sha256": "a680d927bed9cb864ddbd63521868891af2bfbe755092761b4837487618df8ac"
+    },
+    {
+      "mode": "100644",
+      "path": "draco/gltf/draco_encoder.js",
+      "kind": "text",
+      "sha256": "6d4132d7b68d26d20a43a1ed59ff4b4a694fbaad41b339158db050dbd0e68f56"
+    },
+    {
+      "mode": "100644",
+      "path": "draco/gltf/draco_wasm_wrapper.js",
+      "kind": "text",
+      "sha256": "8bb2952d2ba7d67e1414f8df819410cb0434a666be53f671fff75f68843d76f6"
+    },
+    {
+      "mode": "100644",
+      "path": "hdri/studio_small_03_1k.hdr",
+      "kind": "binary",
+      "sha256": "29267a4aa8c10de26cae758e4e3c4daadde88673798666ad657724bab7224a35"
+    },
+    {
+      "mode": "100644",
+      "path": "index.html",
+      "kind": "text",
+      "sha256": "8747881398812fc45223dc8aad06d70bc586d1d44c77123f921cdd773a54bc01"
+    },
+    {
+      "mode": "100644",
+      "path": "models/human_body.glb",
+      "kind": "binary",
+      "sha256": "a5e015c85f3c51db2dab036414bae964d771921e782757bc4a22f31560ec68d4"
+    },
+    {
+      "mode": "100644",
+      "path": "models/license.txt",
+      "kind": "text",
+      "sha256": "5226166d5b328a6f54b62f38818bd89e2f41cf9b7780e8f8c34a6941af7d6f80"
+    },
+    {
+      "mode": "100644",
+      "path": "models/textures/brown_eye.webp",
+      "kind": "binary",
+      "sha256": "c8d717a24da213d717063965b572167cb5b266df5e257a21790bc286480cc221"
+    },
+    {
+      "mode": "100644",
+      "path": "models/textures/Material.022_baseColor.png",
+      "kind": "binary",
+      "sha256": "0194c70f237c2cba2cfdb56fe01c825a6edb44d0be22bef7ef74a92ab05d417c"
+    },
+    {
+      "mode": "100644",
+      "path": "models/textures/old_lightskinned_female_diffuse2.webp",
+      "kind": "binary",
+      "sha256": "d921b2b4e0ecc43b9821dd922a1056a257972e6c47009ab8487be100e0279a5e"
+    },
+    {
+      "mode": "100644",
+      "path": "models/textures/PaletteBaseColor.webp",
+      "kind": "binary",
+      "sha256": "20021b9d99df70ec3c02145a02ec946789665e5d7beadc0981407b65f4bebe58"
+    },
+    {
+      "mode": "100644",
+      "path": "models/textures/sport_briefs01_norm.webp",
+      "kind": "binary",
+      "sha256": "7cd27de38f9922c692505515f176242199cc2e2fa687b34fc05c33120330f570"
+    },
+    {
+      "mode": "100644",
+      "path": "models/textures/sport_briefs01.webp",
+      "kind": "binary",
+      "sha256": "374e4b8cffcec4f4520ab4abdd8caf659e6a1f1fbe5b9f5d59b4e9b335ffbb13"
+    },
+    {
+      "mode": "100644",
+      "path": "source/data/acupoint_categories.js",
+      "kind": "text",
+      "sha256": "d857c54d396618790d95b2e7776a5f5d8cbf2737639b28739bf51ece3a859625"
+    },
+    {
+      "mode": "100644",
+      "path": "source/data/acupoints_data.json",
+      "kind": "text",
+      "sha256": "f73847dd8337aa9e083bf6a535814a8fcf353588bb2d7a3f2b6c4cc543a0435e"
+    },
+    {
+      "mode": "100644",
+      "path": "source/data/dietary/dietary_recipes.json",
+      "kind": "text",
+      "sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570"
+    },
+    {
+      "mode": "100644",
+      "path": "source/data/dietary/dietary_sources.json",
+      "kind": "text",
+      "sha256": "52de552b1c52591ad041543ed1020f5de86c5f232a527311806f2b65cbd841fa"
+    },
+    {
+      "mode": "100644",
+      "path": "source/data/dietary/foods.json",
+      "kind": "text",
+      "sha256": "92d217eaa0a9c605ee0c3658ccfe7c819dd74c030b997c68d46c41e41cfc9c52"
+    },
+    {
+      "mode": "100644",
+      "path": "source/data/dietary/zangfu_relations.json",
+      "kind": "text",
+      "sha256": "ea616171b9a83f1ce61b0b9e6f8f19ab1b912712775436166536ea7eb1f8c357"
+    },
+    {
+      "mode": "100644",
+      "path": "static/css/main.2a2c8a65.css",
+      "kind": "text",
+      "sha256": "4ca0e8c3e1870aab5dbf1e45126620a8eb32a95e45b0091593263808af3b2724"
+    },
+    {
+      "mode": "100644",
+      "path": "static/css/main.2a2c8a65.css.map",
+      "kind": "text",
+      "sha256": "419470b3c48c0bda85ce49effcafd57bbf921984a05011e7d1b185556935f309"
+    },
+    {
+      "mode": "100644",
+      "path": "static/dietary/dev-BJn4gGcL.js",
+      "kind": "text",
+      "sha256": "35a035d76555fb785b0e7003c9e221e5f5a06ef8d3f6e58a027ed9194936067f"
+    },
+    {
+      "mode": "100644",
+      "path": "static/dietary/dev-C2ccZJbu.css",
+      "kind": "text",
+      "sha256": "79d9de4ff488ac5120775dfa8408b86abfcb9852c3047ff243655cc986920ded"
+    },
+    {
+      "mode": "100644",
+      "path": "static/js/main.ae2dba28.js",
+      "kind": "text",
+      "sha256": "f85b27a6d80efd397391e85223d2d25c2f99c57cf897775e8493bae073258462"
+    },
+    {
+      "mode": "100644",
+      "path": "static/js/main.ae2dba28.js.LICENSE.txt",
+      "kind": "text",
+      "sha256": "636bbaf71db03849a9682361c0f68469007efe7e59aed55342c475313be5dc3e"
+    }
+  ]
+}

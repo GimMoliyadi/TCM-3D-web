@@ -1,97 +1,40 @@
-# source/ —— 还原出来的项目源码
+# `source/` 源码维护说明
 
-这个目录**不参与线上部署**（GitHub Pages 只认仓库根目录的 `index.html` / `static/` / `models/` 等），
-它的作用是让这个项目**以后还能被修改和重新构建**。
+`source/` 是当前唯一可维护的 React/Vite 应用源码。Vite 根目录指向 `source/`，因此 `source/index.html` 是唯一开发模板；它保留免责声明、启动加载层、资源预加载和脚本失败兜底。根目录 `index.html`、`static/` 与 `asset-manifest.json` 是当前 GitHub Pages 快照，本阶段不直接编辑。
 
-## 为什么会有这个目录
-
-这个仓库此前**只有构建产物**，没有 `src/`、没有 `package.json`。
-后果是：一旦线上出问题（比如 2026-09-13 那次整页白屏），除了硬啃压缩后的
-`static/js/main.*.js`，没有任何正常途径可以修改代码。
-
-本目录的文件是从 `static/js/main.ae2dba28.js.map` 的 `sourcesContent` 字段
-**逐字还原**出来的原始源码（source map 里内嵌了完整的源码文本），
-`data/acupoints_data.json` 则是从 bundle 里的 `JSON.parse('...')` 提取的。
-**内容与原始源码一致，但请把它当作"存档"而非"已验证可构建的工程"。**
-
-## 文件清单
-
-| 文件 | 说明 |
-| --- | --- |
-| `App.js` | 主组件，618 行。包含场景、穴位点、搜索、分类菜单、详情面板等全部逻辑 |
-| `index.js` | 入口，`createRoot(...).render(<App/>)` |
-| `index.css` | Tailwind 指令 + 自定义样式（`custom-scrollbar` / `fadeInUp` 动画） |
-| `data/acupoints_data.json` | 290 个穴位数据（id / name / relativePos / location / massage / contraindications / efficacy） |
-| `data/acupoint_categories.js` | 部位分类 + 症状分类定义 |
-
-## 依赖版本（从构建产物中实测得到，非猜测）
-
-| 包 | 版本 | 依据 |
-| --- | --- | --- |
-| react / react-dom | `18.3.1` | bundle 内 `version:"18.3.1"` |
-| gsap | `3.15.0` | `main.*.js.LICENSE.txt` 头部声明 |
-| three | 版权年份 2010-2023 → r15x 区间 | LICENSE.txt；建议锁 `0.158.x` 附近 |
-| @react-three/fiber | 与 three r15x 配套的 v8.x | 需实测 |
-| @react-three/drei | v9.x（含 `Environment` / `useGLTF` / `Html` / `useProgress`） | 需实测 |
-| lucide-react | 任意近期版本 | 仅用到图标 |
-| tailwindcss | v3（用了 `@tailwind` 三指令 + `content` 扫描） | `index.css` |
-| react-scripts | v5（CRA，产物含 `asset-manifest.json`） | 产物结构 |
-
-## 重新构建的步骤（未实测，请自行验证）
+## 开发与构建
 
 ```bash
-# 1. 建工程
-npx create-react-app tcm-3d
-cd tcm-3d
+npm ci
+npm run dev
+# http://127.0.0.1:5173/
 
-# 2. 装依赖（版本对齐上面的表）
-npm i three@0.158 @react-three/fiber@8 @react-three/drei@9 gsap@3.15.0 lucide-react
-npm i -D tailwindcss@3 postcss autoprefixer
-npx tailwindcss init -p
-
-# 3. 把本目录的 App.js / index.js / index.css / data/ 放进 src/
-
-# 4. tailwind.config.js 的 content 至少要覆盖 src 下的 js：
-#    content: ["./src/**/*.{js,jsx}"]
-
-# 5. 构建
+npm test
 npm run build
+# 输出 dist/index.html、打包资源及运行时模型资源
 ```
 
-### 构建后必须补回的两件事
+不要重新创建 CRA 工程，也不要把构建结果复制回仓库根目录。`npm run build` 通过 `vite.config.mjs` 生成独立 `dist/`，以相对路径引用资源，并复制根目录的 `models/`、`draco/`、`hdri/`；开发服务器只映射这些明确的资源目录。构建配置会写入 `.nojekyll`，但不会替代 Pages 快照。
 
-`npm run build` 产出的 `index.html` 是干净的 CRA 版本，
-**根目录那份 `index.html` 是手工改造过的**，比 CRA 产物多出：
+## 主要文件
 
-1. 医疗免责声明条（`.medical-disclaimer`）
-2. 启动加载层（`#boot-loading`）+ 启动兜底脚本
-3. 资源 `preload`（glb / hdr / draco）
-4. `body` 的 flex 列布局（避免 `#root` 顶着 100vh 被挤出视口）
+| 路径 | 作用 |
+| --- | --- |
+| `index.html` | 唯一 HTML 模板，含启动与错误兜底 |
+| `index.js` | React 入口与顶层错误处理 |
+| `App.js` | 模式、搜索、分类、详情、3D 场景与食养接线 |
+| `index.css` | Tailwind 指令与页面布局样式 |
+| `data/acupoints_data.json` | 原始 290 条穴位记录；坐标来源 |
+| `data/acupoint_categories.js` | 分类定义与分类显示规则 |
+| `components/dietary/` | 食养锚点、面板、食物详情与来源展示 |
+| `utils/acupointCatalog.mjs` | 目录解析、模型节点过滤与缺失分类引用报告 |
 
-覆盖 `index.html` 前请对照仓库根目录的版本，别把这些改动丢掉。
+穴位的原始数据、坐标、模型节点名称和相机定位关系是受保护边界。当前工程将 7 个模型节点从展示层排除，得到 283 条候选记录；这不是医学验证数量。21 个分类组的引用中，有 75 个不同名称未匹配到现有定位记录，保持待补充状态，不猜测别名或侧别。任何数据修订都应先补来源并更新保护测试。
 
-### 另外要注意
+食养内容复用已有穴位锚点，不新增人体坐标或因果关系。古籍摘录、来源状态和免责声明应与展示数据分开维护，详见 [食养开发历史记录](../docs/dietary-development.md) 与 [升级规划](../docs/upgrade-plan.md)。
 
-- `public/` 下需要放 `draco/`（Draco 解码器）、`hdri/studio_small_03_1k.hdr`、
-  `models/human_body.glb` 与 `models/textures/`。
-  **这些已经在仓库根目录了，`npm run build` 不会删除它们，但请勿用 `build/` 整体覆盖仓库根目录。**
-- 线上使用的是**相对路径** `./draco/` 和 `./hdri/`（相对当前页面），
-  所以资源必须与 `index.html` 同级放置。
-- `models/human_body.glb` 是**修复过的版本**，不要用旧的备份文件覆盖它。
-  详见仓库根目录 `README.md` 的修复记录。
+## 资源与兼容性
 
-## 已知的源码与线上产物的差异
+运行时资源使用当前页面的相对路径：`./models/`、`./draco/`、`./hdri/`。不要恢复第三方 CDN，也不要手工修改 GLB 二进制；如模型资源确需变更，应使用可验证的 glTF 工具并运行完整资源保护与浏览器检查。Three、React Three Fiber、Drei 的版本组合按 `package.json` 锁定，升级需要单独做兼容性回归。
 
-线上 `main.ae2dba28.js` 在源码基础上做过两轮补丁（改的是压缩产物，不是源码）：
-
-1. 把第三方 CDN 地址改成自托管：`gstatic.com/draco/...` → `./draco/`，
-   `raw.githack.com/.../hdri/` → `./hdri/`
-2. 加了一层全局 ErrorBoundary（渲染失败时显示可读的错误面板而不是白屏），
-   并把 `<Environment>` 隔离进自己的 Suspense + 错误边界
-
-**如果按本目录重新构建，这两项需要改回源码里**（源码里目前还是旧写法）：
-
-- `App.js` 第 551 行：`<Environment preset="studio" />` 在 `<Suspense>` **外面**，
-  建议包一层 `<Suspense fallback={null}>` 和错误边界
-- `index.js`：`<App/>` 外面建议包一个 ErrorBoundary
-- 入口处建议加 `useGLTF.setDecoderPath('./draco/')`，不要依赖 Draco 的默认 CDN 地址
+浏览器回归先执行 `npx playwright install --with-deps chromium`，再运行 `npm run test:browser`；已有 Chromium 可通过 `CHROMIUM_PATH` 指定。完整本地门禁是 `npm run check`。CI 在 PR 中只执行检查，主分支通过检查后发布 `dist/` 到 Pages；不包含后端部署。见 [部署说明](../docs/deployment.md)。

@@ -6,8 +6,16 @@
     "dev": "vite --host 127.0.0.1",
     "build": "vite build",
     "test": "node --test tests/*.test.cjs",
-    "build:pages": "npm run build && node scripts/prepare-pages.cjs"
+    "build:pages": "npm run build",
+    "preview": "vite preview --host 127.0.0.1",
+    "test:browser": "node tests/browser-smoke.cjs",
+    "check": "npm test && npm run build && npm run test:browser"
   },
+  "engines": {
+    "node": "24.x",
+    "npm": "11.x"
+  },
+  "packageManager": "npm@11.9.0",
   "dependencies": {
     "@react-three/drei": "9.88.17",
     "@react-three/fiber": "8.18.0",
@@ -19,9 +27,10 @@
   },
   "devDependencies": {
     "autoprefixer": "10.4.21",
-    "postcss": "8.5.6",
+    "postcss": "8.5.29",
     "tailwindcss": "3.4.17",
-    "vite": "6.4.1"
+    "vite": "6.4.4",
+    "playwright": "1.62.1"
   },
   "overrides": {
     "three-mesh-bvh": "0.6.8"
