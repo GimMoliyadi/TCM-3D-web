@@ -1,0 +1,963 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>中医穴位图谱 · UI 升级静态预览</title>
+<style>
+/* =========================================================================
+   来源：source/styles/tokens.css
+   ========================================================================= */
+:root{
+  --rice-50:#fdfcf9;--rice-100:#f9f7f1;--rice-200:#f7f4ed;--rice-300:#f0ebe0;--rice-400:#e5decf;--rice-500:#d8cfbe;
+  --bamboo-900:#1d352c;--bamboo-800:#26473a;--bamboo-700:#2f5c4b;--bamboo-600:#3e6b5a;--bamboo-500:#4f8574;
+  --bamboo-400:#6fa08d;--bamboo-300:#97bfad;--bamboo-200:#c3ddd1;--bamboo-100:#dceae3;--bamboo-50:#eef5f1;
+  --ink-900:#1c1e1b;--ink-800:#2b2e2a;--ink-700:#3a3d38;--ink-600:#52564f;--ink-500:#6b6f68;
+  --ink-400:#8c9089;--ink-300:#b3b7b0;--ink-200:#d5d8d3;--ink-100:#e3e5e1;
+  --cinnabar-700:#8f3223;--cinnabar-600:#b4402f;--cinnabar-500:#c9543f;--cinnabar-200:#f0d3cc;--cinnabar-100:#f7e6e2;
+  --ochre-700:#8a5f16;--ochre-600:#a8761d;--ochre-100:#f6ecd9;
+  --stage-950:#131518;--stage-900:#181b1e;--stage-850:#1e2126;--stage-800:#25292e;--stage-700:#343a40;
+  --stage-600:#4a5259;--stage-text:#e8eaec;--stage-text-dim:#9aa3aa;--stage-line:rgba(255,255,255,.12);
+  --font-sans:system-ui,-apple-system,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+  --font-serif:"Songti SC","STSong","SimSun","Noto Serif SC",Georgia,serif;
+  --font-mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  --sp-1:4px;--sp-2:8px;--sp-3:12px;--sp-4:16px;--sp-5:20px;--sp-6:24px;--sp-8:32px;--sp-10:40px;--sp-12:48px;
+  --r-sm:8px;--r-md:12px;--r-lg:16px;--r-xl:20px;--r-pill:999px;
+  --sh-sm:0 1px 2px rgba(28,30,27,.06);--sh-md:0 4px 14px rgba(28,30,27,.08);
+  --sh-lg:0 12px 32px rgba(28,30,27,.12);--sh-stage:0 10px 30px rgba(0,0,0,.35);
+  --dur-fast:120ms;--dur-base:200ms;--dur-slow:320ms;
+  --ease-out:cubic-bezier(.22,.61,.36,1);--ease-in-out:cubic-bezier(.4,0,.2,1);
+  --z-stage:1;--z-stage-ui:20;--z-drawer:40;--z-header:50;--z-modal:60;--z-toast:70;
+  --header-h:60px;--rail-left-w:320px;--rail-right-w:400px;--sheet-h:46dvh;
+}
+
+/* =========================================================================
+   来源：source/styles/base.css
+   ========================================================================= */
+*,*::before,*::after{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{font-family:var(--font-sans);color:var(--ink-900);background:var(--rice-200);-webkit-font-smoothing:antialiased}
+h1,h2,h3,h4,p,figure,blockquote{margin:0}
+ul,ol{margin:0;padding:0;list-style:none}
+button{font:inherit;color:inherit;border:none;background:none;cursor:pointer}
+input,select,textarea{font:inherit;color:inherit}
+a{color:var(--bamboo-700);text-underline-offset:2px}
+img,svg,canvas{display:block;max-width:100%}
+:focus-visible{outline:2px solid var(--bamboo-500);outline-offset:2px;border-radius:var(--r-sm)}
+.custom-scrollbar{scrollbar-width:thin;scrollbar-color:var(--ink-300) transparent}
+.custom-scrollbar::-webkit-scrollbar{width:8px;height:8px}
+.custom-scrollbar::-webkit-scrollbar-thumb{background:var(--ink-300);border-radius:var(--r-pill);border:2px solid transparent;background-clip:content-box}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes fadeInUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+@keyframes sheetUp{from{transform:translateY(14px);opacity:0}to{transform:translateY(0);opacity:1}}
+.animate-fade-in{animation:fadeIn var(--dur-slow) var(--ease-out) both}
+
+/* =========================================================================
+   来源：source/styles/components.css（按钮 / 分段 / 输入 / 徽标 / 卡片 / 状态 / 浮层）
+   ========================================================================= */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:var(--sp-2);min-height:40px;padding:0 var(--sp-4);border-radius:var(--r-md);font-size:14px;font-weight:600;line-height:1;white-space:nowrap}
+.btn-sm{min-height:32px;padding:0 var(--sp-3);font-size:13px}
+.btn-primary{background:var(--bamboo-600);color:#fff;box-shadow:var(--sh-sm)}
+.btn-secondary{background:var(--rice-50);color:var(--ink-900);border:1px solid var(--rice-500)}
+.btn-secondary.is-active{background:var(--bamboo-100);border-color:var(--bamboo-300);color:var(--bamboo-800)}
+.btn-on-stage{background:rgba(37,41,46,.82);color:var(--stage-text);border:1px solid var(--stage-line);backdrop-filter:blur(10px);box-shadow:var(--sh-stage)}
+.btn-on-stage.is-active{background:var(--bamboo-600);border-color:var(--bamboo-500);color:#fff}
+.icon-btn{display:inline-grid;place-items:center;width:40px;height:40px;flex:0 0 auto;border-radius:var(--r-md);color:var(--ink-600)}
+.icon-btn:hover{background:var(--rice-300);color:var(--ink-900)}
+.icon-btn.is-active{background:var(--bamboo-100);color:var(--bamboo-800)}
+.icon-btn-on-stage{color:var(--stage-text-dim);background:rgba(37,41,46,.8);border:1px solid var(--stage-line);backdrop-filter:blur(10px)}
+.segmented{display:inline-flex;padding:3px;gap:3px;background:var(--rice-300);border:1px solid var(--rice-400);border-radius:var(--r-md)}
+.segmented button{display:inline-flex;align-items:center;gap:6px;min-height:32px;padding:0 var(--sp-4);border-radius:9px;font-size:13.5px;font-weight:600;color:var(--ink-600)}
+.segmented button[aria-pressed="true"]{background:var(--rice-50);color:var(--bamboo-800);box-shadow:var(--sh-sm)}
+.segmented.segmented-block{display:flex;width:100%}
+.segmented.segmented-block button{flex:1 1 0;justify-content:center}
+.field{position:relative;display:flex;align-items:center;gap:var(--sp-2);min-height:44px;padding:0 var(--sp-3);background:var(--rice-50);border:1px solid var(--rice-500);border-radius:var(--r-md)}
+.field input{flex:1 1 auto;min-width:0;border:none;background:transparent;outline:none;font-size:15px;color:var(--ink-900)}
+.field input::placeholder{color:var(--ink-400)}
+.field-icon{flex:0 0 auto;display:grid;place-items:center;color:var(--ink-400)}
+.badge{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:var(--r-pill);font-size:11.5px;font-weight:600;line-height:1.6;white-space:nowrap}
+.badge-neutral{background:var(--rice-300);color:var(--ink-600)}
+.badge-bamboo{background:var(--bamboo-100);color:var(--bamboo-800)}
+.badge-cinnabar{background:var(--cinnabar-100);color:var(--cinnabar-700)}
+.badge-ochre{background:var(--ochre-100);color:var(--ochre-700)}
+.card{background:var(--rice-50);border:1px solid var(--rice-400);border-radius:var(--r-lg);padding:var(--sp-4)}
+.card-tight{padding:var(--sp-3)}
+.card-elevated{box-shadow:var(--sh-md)}
+.detail-card{position:relative;padding:var(--sp-4) var(--sp-4) var(--sp-4) var(--sp-5);border-radius:var(--r-md);background:var(--rice-100);border:1px solid var(--rice-400);border-left:3px solid var(--bamboo-400)}
+.detail-card h4{display:flex;align-items:center;gap:6px;font-size:13px;font-weight:700;margin-bottom:var(--sp-2);color:var(--bamboo-700)}
+.detail-card p{font-size:14.5px;line-height:1.85;color:var(--ink-700);word-break:break-word;white-space:pre-line}
+.detail-card.tone-location{border-left-color:var(--bamboo-500)}
+.detail-card.tone-efficacy{border-left-color:var(--ochre-600)}
+.detail-card.tone-efficacy h4{color:var(--ochre-700)}
+.detail-card.tone-massage{border-left-color:var(--ink-400)}
+.detail-card.tone-massage h4{color:var(--ink-600)}
+.detail-card.tone-warning{border-left-color:var(--cinnabar-600);background:var(--cinnabar-100);border-color:var(--cinnabar-200)}
+.detail-card.tone-warning h4{color:var(--cinnabar-700)}
+.state-block{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:var(--sp-3);padding:var(--sp-8) var(--sp-5);text-align:center}
+.state-icon{display:grid;place-items:center;width:46px;height:46px;border-radius:var(--r-pill);background:var(--rice-300);color:var(--ink-500)}
+.state-title{font-size:15px;font-weight:700;color:var(--ink-900)}
+.state-desc{font-size:13px;line-height:1.7;color:var(--ink-500);max-width:32ch}
+.spinner{width:22px;height:22px;border:2px solid var(--rice-400);border-top-color:var(--bamboo-600);border-radius:50%;animation:spin .8s linear infinite}
+.spinner-on-stage{border-color:rgba(255,255,255,.18);border-top-color:var(--bamboo-300)}
+@keyframes spin{to{transform:rotate(360deg)}}
+.section-head{display:flex;align-items:center;justify-content:space-between;gap:var(--sp-2);margin-bottom:var(--sp-3)}
+.section-title{display:flex;align-items:center;gap:7px;font-size:13px;font-weight:700;letter-spacing:.04em;color:var(--ink-500)}
+.section-title svg{color:var(--bamboo-500)}
+.legend{display:flex;flex-direction:column;gap:var(--sp-2);padding:var(--sp-3) var(--sp-4);border-radius:var(--r-md);background:rgba(24,27,30,.82);border:1px solid var(--stage-line);backdrop-filter:blur(10px);color:var(--stage-text-dim);font-size:12px;line-height:1.6;box-shadow:var(--sh-stage)}
+.legend-row{display:flex;align-items:center;gap:var(--sp-2)}
+.legend-dot{width:9px;height:9px;border-radius:50%;background:var(--cinnabar-600);box-shadow:0 0 0 3px rgba(180,64,47,.22);flex:0 0 auto}
+.legend-dot.is-active{background:#ff4a38;box-shadow:0 0 0 4px rgba(255,74,56,.26)}
+.stage-toast{display:flex;align-items:center;gap:var(--sp-2);padding:9px var(--sp-4);border-radius:var(--r-pill);background:rgba(24,27,30,.86);border:1px solid var(--stage-line);backdrop-filter:blur(10px);color:var(--stage-text);font-size:13px;box-shadow:var(--sh-stage)}
+.stage-toast strong{color:var(--bamboo-300);font-weight:700}
+.guide-panel{width:min(360px,calc(100vw - 2 * var(--sp-4)));max-height:min(64vh,520px);overflow-y:auto;padding:var(--sp-5);border-radius:var(--r-lg);background:rgba(253,252,249,.97);backdrop-filter:blur(14px);border:1px solid var(--rice-400);box-shadow:var(--sh-lg)}
+.guide-title{display:flex;align-items:center;gap:var(--sp-2);font-family:var(--font-serif);font-size:16px;font-weight:700;color:var(--ink-900);margin-bottom:var(--sp-4)}
+.guide-group + .guide-group{margin-top:var(--sp-5)}
+.guide-group h4{display:flex;align-items:center;gap:6px;font-size:13px;font-weight:700;color:var(--bamboo-700);margin-bottom:var(--sp-2)}
+.guide-group li{display:flex;align-items:flex-start;gap:var(--sp-2);font-size:13px;line-height:1.75;color:var(--ink-600);padding:3px 0}
+
+/* =========================================================================
+   来源：source/styles/panels.css（搜索 / 分类 / 穴位详情）
+   ========================================================================= */
+.search-results{margin-top:var(--sp-3);border:1px solid var(--rice-400);border-radius:var(--r-lg);background:var(--rice-50);box-shadow:var(--sh-md);overflow:hidden}
+.search-wrap{position:relative}
+.search-wrap .search-results{position:absolute;top:calc(100% + var(--sp-2));left:0;right:0;z-index:var(--z-modal)}
+.search-results-head{display:flex;align-items:center;justify-content:space-between;gap:var(--sp-2);padding:var(--sp-2) var(--sp-4);background:var(--rice-100);border-bottom:1px solid var(--rice-400);font-size:12px;color:var(--ink-500)}
+.search-results-list{max-height:min(58vh,460px);overflow-y:auto}
+.search-result{display:flex;align-items:flex-start;gap:var(--sp-3);width:100%;padding:var(--sp-3) var(--sp-4);text-align:left;border-bottom:1px solid var(--rice-300);cursor:pointer}
+.search-result:last-child{border-bottom:none}
+.search-result:hover,.search-result.is-active{background:var(--bamboo-50)}
+.search-result-mark{flex:0 0 auto;width:8px;height:8px;margin-top:7px;border-radius:50%;background:var(--cinnabar-500)}
+.search-result-name{display:flex;align-items:center;gap:var(--sp-2);font-size:15px;font-weight:700;color:var(--ink-900)}
+.search-result-desc{margin-top:3px;font-size:12.5px;line-height:1.6;color:var(--ink-500)}
+.search-result mark{background:var(--bamboo-100);color:var(--bamboo-800);border-radius:3px;padding:0 1px}
+.category-tabs{margin-bottom:var(--sp-4)}
+.category-group{border-radius:var(--r-md);overflow:hidden;margin-bottom:var(--sp-2);border:1px solid transparent}
+.category-group.is-open{border-color:var(--rice-400);background:var(--rice-100)}
+.category-toggle{display:flex;align-items:center;justify-content:space-between;gap:var(--sp-2);width:100%;min-height:46px;padding:var(--sp-2) var(--sp-3);border-radius:var(--r-md);text-align:left}
+.category-toggle:hover{background:var(--rice-200)}
+.category-group.is-open .category-toggle{background:transparent}
+.category-toggle-main{display:flex;align-items:baseline;gap:var(--sp-2);min-width:0}
+.category-name{font-size:14.5px;font-weight:700;color:var(--ink-900)}
+.category-desc{font-size:12px;color:var(--ink-400);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.category-toggle-side{display:flex;align-items:center;gap:var(--sp-2);flex:0 0 auto}
+.category-chevron{color:var(--ink-400)}
+.category-group.is-open .category-chevron{transform:rotate(90deg)}
+.category-points{padding:0 var(--sp-2) var(--sp-2)}
+.point-row{display:flex;align-items:center;justify-content:space-between;gap:var(--sp-3);width:100%;min-height:38px;padding:var(--sp-2) var(--sp-3);border-radius:var(--r-sm);text-align:left}
+.point-row:hover{background:var(--rice-50)}
+.point-row-name{font-size:13.5px;color:var(--ink-700);white-space:nowrap}
+.point-row.is-active{background:var(--bamboo-100)}
+.point-row.is-active .point-row-name{color:var(--bamboo-800);font-weight:700}
+.point-row-hint{font-size:11.5px;color:var(--ink-400);max-width:46%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.category-foot{display:flex;align-items:flex-start;gap:var(--sp-2);margin-top:var(--sp-4);padding:var(--sp-3);border-radius:var(--r-md);background:var(--bamboo-50);border:1px solid var(--bamboo-100);color:var(--ink-500);font-size:12.5px;line-height:1.7}
+.category-foot svg{flex:0 0 auto;margin-top:2px;color:var(--ochre-600)}
+.detail{display:flex;flex-direction:column;height:100%;min-height:0}
+.detail-head{position:relative;flex:0 0 auto;padding:var(--sp-5) var(--sp-6) var(--sp-4);border-bottom:1px solid var(--rice-400);background:linear-gradient(180deg,var(--bamboo-50),var(--rice-50))}
+.detail-eyebrow{display:flex;align-items:center;gap:6px;font-size:11.5px;letter-spacing:.12em;color:var(--bamboo-600);text-transform:uppercase;margin-bottom:var(--sp-2)}
+.detail-name{font-family:var(--font-serif);font-size:30px;font-weight:700;letter-spacing:.06em;line-height:1.25;color:var(--ink-900);padding-right:44px}
+.detail-rule{width:56px;height:3px;margin-top:var(--sp-3);border-radius:var(--r-pill);background:var(--cinnabar-600)}
+.detail-close{position:absolute;top:var(--sp-4);right:var(--sp-4)}
+.detail-body{flex:1 1 auto;min-height:0;overflow-y:auto;padding:var(--sp-5) var(--sp-6) var(--sp-6)}
+.detail-stack{display:flex;flex-direction:column;gap:var(--sp-4)}
+.detail-chips{display:flex;flex-wrap:wrap;gap:var(--sp-2)}
+.detail-foot{flex:0 0 auto;padding:var(--sp-3) var(--sp-6) var(--sp-5);border-top:1px solid var(--rice-400);background:var(--rice-100)}
+.detail-hint{display:flex;align-items:center;gap:var(--sp-2);padding:var(--sp-3);border-radius:var(--r-md);background:var(--rice-50);border:1px solid var(--rice-400);color:var(--ink-500);font-size:12.5px;width:100%;text-align:left}
+.detail-foot-row{display:flex;flex-direction:column;gap:var(--sp-2)}
+.detail-lead{font-size:15px;line-height:1.9;color:var(--ink-700)}
+.source-note{font-size:12.5px;line-height:1.8;color:var(--ink-500)}
+.source-note strong{color:var(--ink-700)}
+
+/* =========================================================================
+   来源：source/components/dietary/dietary.css
+   ========================================================================= */
+.dietary-panel{display:flex;flex-direction:column;height:100%;min-height:0;background:var(--rice-50);color:var(--ink-900)}
+.dietary-panel header{flex:0 0 auto;display:flex;align-items:center;justify-content:space-between;gap:var(--sp-3);padding:var(--sp-4) var(--sp-5);border-bottom:1px solid var(--rice-400);background:linear-gradient(180deg,var(--bamboo-50),var(--rice-50))}
+.dietary-panel header>span{font-family:var(--font-serif);font-size:15px;font-weight:700;letter-spacing:.06em}
+.dietary-panel header button{display:grid;place-items:center;width:36px;height:36px;border-radius:var(--r-md);color:var(--ink-500);font-size:22px;line-height:1}
+.dietary-scroll{flex:1 1 auto;min-height:0;overflow-y:auto;padding:var(--sp-5)}
+.dietary-panel h2{font-family:var(--font-serif);font-size:24px;font-weight:700;letter-spacing:.04em;line-height:1.3;margin-bottom:var(--sp-3)}
+.dietary-panel h3{font-size:14px;font-weight:700;color:var(--bamboo-700);margin:var(--sp-5) 0 var(--sp-2)}
+.dietary-panel p{font-size:14px;line-height:1.85;color:var(--ink-600);margin:var(--sp-2) 0}
+.dietary-panel small{display:block;font-size:12px;line-height:1.7;color:var(--ink-400)}
+.dietary-notice{margin:0 0 var(--sp-4);padding:var(--sp-3) var(--sp-4);border-radius:var(--r-md);background:var(--bamboo-50);border:1px solid var(--bamboo-100);border-left:3px solid var(--bamboo-400);font-size:12.5px;line-height:1.8;color:var(--ink-600)}
+.dietary-muted{font-size:12px!important;color:var(--ink-400)!important;margin-top:var(--sp-2)!important}
+.dietary-panel label{display:block;margin:var(--sp-4) 0 0;font-size:12.5px;font-weight:600;color:var(--ink-500)}
+.dietary-panel input{display:block;width:100%;min-height:42px;margin-top:var(--sp-2);padding:0 var(--sp-3);background:#fff;border:1px solid var(--rice-500);border-radius:var(--r-md);font-size:14px;color:var(--ink-900)}
+.dietary-panel input::placeholder{color:var(--ink-400)}
+.dietary-card{display:block;width:100%;text-align:left;margin:var(--sp-3) 0;padding:var(--sp-4);background:var(--rice-100);border:1px solid var(--rice-400);border-radius:var(--r-lg)}
+.dietary-card:hover{background:var(--bamboo-50);border-color:var(--bamboo-200);box-shadow:var(--sh-sm)}
+.dietary-card strong{display:block;font-family:var(--font-serif);font-size:19px;font-weight:700;letter-spacing:.04em;color:var(--ink-900)}
+.dietary-card p{margin:var(--sp-2) 0 0;font-size:13.5px;color:var(--ink-600)}
+.dietary-card small{margin-top:var(--sp-2)}
+.dietary-card span{display:inline-block;margin-top:var(--sp-3);font-size:13px;font-weight:600;color:var(--bamboo-700)}
+.dietary-target{display:inline-flex;align-items:center;gap:6px;margin-top:var(--sp-2);padding:7px 14px;border-radius:var(--r-pill);background:var(--bamboo-100);border:1px solid var(--bamboo-200);color:var(--bamboo-800);font-size:13px;font-weight:600}
+.dietary-back{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;margin-bottom:var(--sp-3);border-radius:var(--r-pill);background:var(--rice-100);border:1px solid var(--rice-400);color:var(--ink-600);font-size:12.5px;font-weight:600}
+.dietary-panel details{margin:var(--sp-3) 0;padding:var(--sp-3) var(--sp-4);background:var(--rice-100);border:1px solid var(--rice-400);border-radius:var(--r-md)}
+.dietary-panel summary{cursor:pointer;font-size:13px;font-weight:600;color:var(--bamboo-700);list-style:none}
+.dietary-panel summary::-webkit-details-marker{display:none}
+.dietary-panel summary::before{content:'▸ ';color:var(--bamboo-500)}
+.dietary-panel details[open] summary::before{content:'▾ '}
+.dietary-panel blockquote{margin:var(--sp-3) 0;padding:var(--sp-2) var(--sp-4);border-left:3px solid var(--ochre-600);background:var(--ochre-100);border-radius:0 var(--r-sm) var(--r-sm) 0;font-family:var(--font-serif);font-size:14px;line-height:1.9;color:var(--ink-700)}
+.dietary-panel a{display:inline-block;margin-top:var(--sp-2);font-size:12.5px;font-weight:600;color:var(--bamboo-700)}
+.dietary-empty{padding:var(--sp-6) var(--sp-4);text-align:center;border-radius:var(--r-md);background:var(--rice-100);border:1px dashed var(--rice-500);color:var(--ink-500);font-size:13px}
+.dietary-anchor{display:inline-flex;flex-direction:column;align-items:flex-start;gap:2px;padding:8px 14px;border-radius:var(--r-md);background:rgba(20,79,69,.92);border:1px solid var(--bamboo-400);color:#eafaf3;font-size:13px;font-weight:600;white-space:nowrap;box-shadow:0 0 0 4px rgba(108,229,187,.14),var(--sh-stage)}
+.dietary-anchor small{font-size:10.5px;font-weight:500;color:#b4dccf}
+
+/* =========================================================================
+   来源：source/styles/layout.css —— 断点改写为「容器查询」，
+   以便在同一页面里并列渲染桌面 / 平板 / 手机三种宽度。
+   ========================================================================= */
+.device-frame{position:relative;overflow:hidden;border-radius:14px;border:1px solid var(--rice-500);
+  background:var(--rice-200);container-type:inline-size;box-shadow:var(--sh-lg);--sheet-h:340px}
+.device-page{display:flex;flex-direction:column;height:100%}
+.app-root{position:relative;flex:1 1 auto;min-height:0}
+.app-shell{position:absolute;inset:0;display:flex;flex-direction:column;background:var(--rice-200);overflow:hidden}
+.medical-disclaimer{position:relative;z-index:10000;flex:0 0 auto;padding:7px var(--sp-4);background:var(--rice-300);
+  border-bottom:1px solid var(--rice-400);color:var(--ink-500);font:12px/1.65 var(--font-sans);text-align:center}
+.medical-disclaimer strong{color:var(--cinnabar-600);font-weight:700;margin-right:6px}
+.app-header{flex:0 0 auto;height:var(--header-h);display:flex;align-items:center;gap:var(--sp-3);padding:0 var(--sp-4);
+  background:rgba(253,252,249,.92);backdrop-filter:blur(12px);border-bottom:1px solid var(--rice-400);z-index:var(--z-header)}
+.brand{display:flex;align-items:center;gap:var(--sp-2);min-width:0;flex:0 0 auto}
+.brand-mark{width:34px;height:34px;flex:0 0 auto;display:grid;place-items:center;border-radius:10px;
+  background:linear-gradient(145deg,var(--bamboo-600),var(--bamboo-800));color:#fff;box-shadow:var(--sh-sm)}
+.brand-text{min-width:0;display:flex;flex-direction:column;line-height:1.15}
+.brand-title{font-family:var(--font-serif);font-size:16px;font-weight:700;letter-spacing:.08em;color:var(--ink-900);white-space:nowrap}
+.brand-sub{font-size:10px;letter-spacing:.16em;color:var(--ink-400);text-transform:uppercase;white-space:nowrap}
+.header-search{flex:1 1 240px;min-width:0;max-width:460px;margin-left:auto}
+.header-actions{display:flex;align-items:center;gap:var(--sp-2);flex:0 0 auto}
+.app-body{flex:1 1 auto;min-height:0;position:relative;display:grid;grid-template-columns:0 minmax(0,1fr);
+  transition:grid-template-columns var(--dur-slow) var(--ease-out)}
+.app-body.left-open{grid-template-columns:var(--rail-left-w) minmax(0,1fr)}
+.app-body.has-right-rail{grid-template-columns:0 minmax(0,1fr) var(--rail-right-w)}
+.app-body.left-open.has-right-rail{grid-template-columns:var(--rail-left-w) minmax(0,1fr) var(--rail-right-w)}
+.rail{position:relative;min-width:0;min-height:0;background:var(--rice-50);display:flex;flex-direction:column;overflow:hidden}
+.rail-left{border-right:1px solid var(--rice-400)}
+.rail-head{flex:0 0 auto;display:flex;align-items:center;justify-content:space-between;gap:var(--sp-2);
+  padding:var(--sp-4) var(--sp-5) var(--sp-3);border-bottom:1px solid var(--rice-400)}
+.rail-title{font-family:var(--font-serif);font-size:15px;font-weight:700;letter-spacing:.06em;color:var(--ink-900)}
+.rail-scroll{flex:1 1 auto;min-height:0;overflow-y:auto;padding:var(--sp-4) var(--sp-5) var(--sp-6)}
+.rail-right{border-left:1px solid var(--rice-400);box-shadow:-6px 0 24px rgba(28,30,27,.05);animation:fadeIn var(--dur-base) var(--ease-out) both}
+.stage{position:relative;min-width:0;min-height:0;overflow:hidden;
+  background:radial-gradient(120% 80% at 50% 15%,var(--stage-800) 0%,var(--stage-900) 55%,var(--stage-950) 100%)}
+.stage-ui{position:absolute;z-index:var(--z-stage-ui);pointer-events:none;display:flex;flex-direction:column;gap:var(--sp-2);max-width:min(60%,320px)}
+.stage-ui>*{pointer-events:auto}
+.stage-ui-top-left{top:var(--sp-4);left:var(--sp-4);align-items:flex-start}
+.stage-ui-top-right{top:var(--sp-4);right:var(--sp-4);align-items:flex-end}
+.stage-ui-bottom-left{bottom:var(--sp-4);left:var(--sp-4);align-items:flex-start}
+.stage-actions{display:flex;flex-wrap:wrap;gap:var(--sp-2);max-width:min(72vw,420px)}
+.scrim{position:absolute;inset:0;z-index:var(--z-drawer);background:rgba(28,30,27,.34);border:none;padding:0}
+.app-body>.rail-left{grid-column:1;grid-row:1}
+.app-body>.stage{grid-column:2;grid-row:1}
+.app-body>.rail-right{grid-column:3;grid-row:1}
+
+@container (max-width:1180px){
+  .app-body.left-open,.app-body.left-open.has-right-rail{grid-template-columns:0 minmax(0,1fr)}
+  .app-body.has-right-rail{grid-template-columns:0 minmax(0,1fr) 360px}
+  .rail-left{position:absolute;top:0;bottom:0;left:0;width:min(340px,86vw);z-index:var(--z-drawer);
+    transform:translateX(-102%);box-shadow:var(--sh-lg)}
+  .rail-left.is-open{transform:translateX(0)}
+}
+@container (max-width:860px){
+  .app-shell{--header-h:56px}
+  .app-body,.app-body.left-open,.app-body.has-right-rail,.app-body.left-open.has-right-rail{
+    grid-template-columns:minmax(0,1fr);grid-template-rows:minmax(0,1fr) auto}
+  .app-body.sheet-open,.app-body.has-right-rail{grid-template-rows:minmax(140px,1fr) var(--sheet-h)}
+  .rail-right{border-left:none;border-top:1px solid var(--rice-400);box-shadow:0 -8px 26px rgba(28,30,27,.08);
+    animation:sheetUp var(--dur-slow) var(--ease-out) both}
+  .rail-left{width:min(360px,88vw)}
+  .rail-scroll{padding:var(--sp-3) var(--sp-4) var(--sp-5)}
+  .brand-sub{display:none}
+  .header-search{max-width:none}
+  .app-body>.stage{grid-column:1;grid-row:1}
+  .app-body>.rail-right{grid-column:1;grid-row:2;min-height:0}
+}
+@container (max-width:640px){
+  .app-header{height:auto;flex-wrap:wrap;row-gap:var(--sp-2);padding:var(--sp-2) var(--sp-3)}
+  .header-search{order:3;flex:1 1 100%;max-width:none;margin-left:0}
+  .header-search:empty{display:none}
+  .header-actions{margin-left:auto}
+}
+@container (max-width:460px){
+  .app-header{padding:0 var(--sp-3);gap:var(--sp-2)}
+  .brand-text{display:none}
+  .segmented button{padding:0 var(--sp-3)}
+}
+
+/* =========================================================================
+   预览页自身的外壳（不属于应用样式）
+   ========================================================================= */
+.pg{max-width:1560px;margin:0 auto;padding:40px 24px 80px}
+.pg-hero{padding:28px 32px;border-radius:var(--r-xl);background:linear-gradient(135deg,var(--bamboo-700),var(--bamboo-900));
+  color:#eef7f2;box-shadow:var(--sh-lg)}
+.pg-hero h1{font-family:var(--font-serif);font-size:30px;letter-spacing:.06em;margin-bottom:10px}
+.pg-hero p{font-size:14px;line-height:1.9;color:#c3ddd1;max-width:82ch}
+.pg-hero code{font-family:var(--font-mono);font-size:12.5px;background:rgba(0,0,0,.28);padding:2px 7px;border-radius:6px}
+.pg-note{margin-top:16px;padding:12px 16px;border-radius:var(--r-md);background:rgba(255,255,255,.09);border:1px solid rgba(255,255,255,.16);font-size:13px;line-height:1.85;color:#dceae3}
+.pg-section{margin-top:44px}
+.pg-section>h2{font-family:var(--font-serif);font-size:21px;letter-spacing:.05em;margin-bottom:6px}
+.pg-section>p.pg-sub{font-size:13.5px;color:var(--ink-500);line-height:1.85;margin-bottom:20px;max-width:88ch}
+.pg-swatches{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px}
+.pg-swatch{border:1px solid var(--rice-400);border-radius:var(--r-md);overflow:hidden;background:var(--rice-50)}
+.pg-swatch i{display:block;height:56px}
+.pg-swatch b{display:block;padding:10px 12px 2px;font-size:13px}
+.pg-swatch span{display:block;padding:0 12px 11px;font-size:11.5px;color:var(--ink-400);font-family:var(--font-mono)}
+.pg-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px}
+.pg-box{border:1px solid var(--rice-400);border-radius:var(--r-lg);background:var(--rice-50);padding:20px}
+.pg-box h3{font-size:13px;font-weight:700;letter-spacing:.04em;color:var(--ink-500);margin-bottom:14px}
+.pg-row{display:flex;flex-wrap:wrap;align-items:center;gap:10px}
+.pg-row+.pg-row{margin-top:12px}
+.pg-frames{display:flex;flex-wrap:wrap;gap:28px;align-items:flex-start}
+.pg-frame-wrap{display:flex;flex-direction:column;gap:10px}
+.pg-cap{font-size:12.5px;color:var(--ink-500);line-height:1.7}
+.pg-cap b{color:var(--ink-900)}
+.stage-mock{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;
+  padding:24px;text-align:center;color:var(--stage-text-dim)}
+.stage-mock-figure{position:relative;width:118px;height:280px;border:2px dashed rgba(255,255,255,.16);
+  border-radius:58px 58px 44px 44px}
+.stage-mock-figure::before,.stage-mock-figure::after{content:'';position:absolute;width:9px;height:9px;border-radius:50%;
+  background:var(--cinnabar-500);box-shadow:0 0 0 4px rgba(201,84,63,.24)}
+.stage-mock-figure::before{top:66px;left:24px}
+.stage-mock-figure::after{top:150px;left:74px}
+.stage-mock-note{font-size:12px;line-height:1.7;max-width:300px}
+.ic{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.ic-lg{width:18px;height:18px}
+</style>
+</head>
+<body>
+
+<svg style="display:none" aria-hidden="true">
+  <symbol id="i-pulse" viewBox="0 0 24 24"><path d="M3 12h4l2.5-6 4 12L16 12h5"/></symbol>
+  <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.7-3.7"/></symbol>
+  <symbol id="i-book" viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></symbol>
+  <symbol id="i-menu" viewBox="0 0 24 24"><path d="M3 6h18M3 12h18M3 18h18"/></symbol>
+  <symbol id="i-close" viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"/></symbol>
+  <symbol id="i-crosshair" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M12 2v4M12 18v4M2 12h4M18 12h4"/></symbol>
+  <symbol id="i-eye" viewBox="0 0 24 24"><path d="M2 12s3.6-6 10-6 10 6 10 6-3.6 6-10 6-10-6-10-6z"/><circle cx="12" cy="12" r="2.5"/></symbol>
+  <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></symbol>
+  <symbol id="i-pin" viewBox="0 0 24 24"><path d="M12 22s7-6.2 7-12A7 7 0 0 0 5 10c0 5.8 7 12 7 12z"/><circle cx="12" cy="10" r="2.5"/></symbol>
+  <symbol id="i-sparkle" viewBox="0 0 24 24"><path d="M12 3v5M12 16v5M3 12h5M16 12h5M6.5 6.5l3 3M14.5 14.5l3 3M17.5 6.5l-3 3M9.5 14.5l-3 3"/></symbol>
+  <symbol id="i-hand" viewBox="0 0 24 24"><path d="M12 21s-7-4.4-7-9.5A3.9 3.9 0 0 1 12 9a3.9 3.9 0 0 1 7 2.5C19 16.6 12 21 12 21z"/></symbol>
+  <symbol id="i-warn" viewBox="0 0 24 24"><path d="M12 3 2.5 20h19L12 3z"/><path d="M12 9v5M12 17h.01"/></symbol>
+  <symbol id="i-chev" viewBox="0 0 24 24"><path d="m9 5 7 7-7 7"/></symbol>
+  <symbol id="i-bulb" viewBox="0 0 24 24"><path d="M9 18h6M10 22h4M12 2a6 6 0 0 0-4 10.5V15h8v-2.5A6 6 0 0 0 12 2z"/></symbol>
+  <symbol id="i-folder" viewBox="0 0 24 24"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></symbol>
+  <symbol id="i-key" viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="11" rx="2"/><path d="M7 7V5m10 2V5"/></symbol>
+  <symbol id="i-list" viewBox="0 0 24 24"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></symbol>
+  <symbol id="i-hash" viewBox="0 0 24 24"><path d="M4 9h16M4 15h16M10 3 8 21M16 3l-2 18"/></symbol>
+  <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></symbol>
+  <symbol id="i-target" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3"/></symbol>
+</svg>
+
+<div class="pg">
+
+  <header class="pg-hero">
+    <h1>中医穴位图谱 · UI 升级静态预览</h1>
+    <p>
+      本页用<strong>真实的样式表</strong>（<code>source/styles/*.css</code> 与
+      <code>dietary.css</code>）加静态 DOM 复现应用外壳，用于在没有工具链的环境下目视核对
+      设计语言、信息层级与三端布局。响应式断点已改写为 <code>@container</code>，
+      因此可以在同一页面并列展示桌面 1280 / 手机 390 两种结果。
+    </p>
+    <div class="pg-note">
+      ⚠️ 这不是运行时截图。3D 人体模型与 290 个穴位标记是 WebGL 渲染，需要执行
+      <code>npm run dev</code> 或 <code>npm run build</code> 后由 Playwright 抓取。
+      本机 WorkBuddy 的命令执行运行时（<code>cli/dist</code>）缺失，本轮无法执行构建与截图。
+    </div>
+  </header>
+
+  <section class="pg-section">
+    <h2>一、设计 token：米白 · 竹青 · 淡墨</h2>
+    <p class="pg-sub">
+      页面底用米白与宣纸，主强调用竹青，正文用淡墨，穴位标记与禁忌用朱砂，功效提示用赭石。
+      3D 舞台单独使用中性深灰，让模型与红色标记获得最高对比度。
+    </p>
+    <div class="pg-swatches">
+      <div class="pg-swatch"><i style="background:#f7f4ed"></i><b>页面底 · 米白</b><span>--rice-200 #F7F4ED</span></div>
+      <div class="pg-swatch"><i style="background:#fdfcf9"></i><b>卡片面 · 宣纸</b><span>--rice-50 #FDFCF9</span></div>
+      <div class="pg-swatch"><i style="background:#e5decf"></i><b>分隔线 · 淡墨线</b><span>--rice-400 #E5DECF</span></div>
+      <div class="pg-swatch"><i style="background:#3e6b5a"></i><b>主强调 · 竹青</b><span>--bamboo-600 #3E6B5A</span></div>
+      <div class="pg-swatch"><i style="background:#dceae3"></i><b>强调浅底</b><span>--bamboo-100 #DCEAE3</span></div>
+      <div class="pg-swatch"><i style="background:#1c1e1b"></i><b>正文 · 淡墨</b><span>--ink-900 #1C1E1B</span></div>
+      <div class="pg-swatch"><i style="background:#b4402f"></i><b>朱砂 · 标记/禁忌</b><span>--cinnabar-600 #B4402F</span></div>
+      <div class="pg-swatch"><i style="background:#a8761d"></i><b>赭石 · 功效/提示</b><span>--ochre-600 #A8761D</span></div>
+      <div class="pg-swatch"><i style="background:radial-gradient(120% 80% at 50% 15%,#25292e,#181b1e 55%,#131518)"></i><b>3D 舞台底</b><span>--stage-800 → --stage-950</span></div>
+    </div>
+  </section>
+
+  <section class="pg-section">
+    <h2>二、组件与状态</h2>
+    <p class="pg-sub">按钮、分段控件、输入、徽标、详情卡、加载/空/错误三态。所有组件状态齐全（hover / active / disabled / focus-visible）。</p>
+    <div class="pg-grid">
+      <div class="pg-box">
+        <h3>按钮 / 图标按钮 / 分段控件</h3>
+        <div class="pg-row">
+          <button class="btn btn-primary">主操作</button>
+          <button class="btn btn-secondary">次要操作</button>
+          <button class="btn btn-secondary btn-sm"><svg class="ic"><use href="#i-menu"/></svg>穴位分类</button>
+          <button class="btn btn-secondary" disabled style="opacity:.5;cursor:not-allowed">禁用</button>
+        </div>
+        <div class="pg-row">
+          <button class="icon-btn" aria-label="使用说明"><svg class="ic ic-lg"><use href="#i-book"/></svg></button>
+          <button class="icon-btn is-active" aria-label="使用说明（展开）"><svg class="ic ic-lg"><use href="#i-book"/></svg></button>
+          <div class="segmented" role="group" aria-label="知识模式">
+            <button aria-pressed="true"><span>穴位</span></button>
+            <button aria-pressed="false"><span>食养</span></button>
+          </div>
+        </div>
+        <div class="pg-row" style="margin-top:16px">
+          <div class="field" style="flex:1 1 220px">
+            <span class="field-icon"><svg class="ic ic-lg"><use href="#i-search"/></svg></span>
+            <input type="search" placeholder="搜索穴位名称..." aria-label="搜索穴位" />
+          </div>
+        </div>
+        <div class="pg-row">
+          <span class="badge badge-neutral">中性 12</span>
+          <span class="badge badge-bamboo">部位</span>
+          <span class="badge badge-ochre">症状</span>
+          <span class="badge badge-cinnabar">禁忌</span>
+        </div>
+      </div>
+
+      <div class="pg-box">
+        <h3>搜索状态：加载 / 空 / 错误</h3>
+        <div class="card card-tight" style="margin-bottom:12px">
+          <div class="state-block" style="padding:20px 12px" role="status">
+            <div class="spinner"></div>
+            <div class="state-title">正在准备穴位数据…</div>
+          </div>
+        </div>
+        <div class="card card-tight" style="margin-bottom:12px">
+          <div class="state-block" style="padding:20px 12px" role="status">
+            <div class="state-icon"><svg class="ic ic-lg"><use href="#i-search"/></svg></div>
+            <div class="state-title">没有找到匹配的穴位</div>
+            <p class="state-desc">试试输入穴位名称的一部分，或按功效关键词搜索，例如「头痛」「失眠」。</p>
+          </div>
+        </div>
+        <div class="card card-tight">
+          <div class="state-block" style="padding:20px 12px" role="alert">
+            <div class="state-icon warn">!</div>
+            <div class="state-title">穴位数据加载失败</div>
+            <p class="state-desc">请刷新页面重试。</p>
+            <button class="btn btn-primary btn-sm">重新加载</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="pg-section">
+    <h2>三、桌面端布局（1280 × 800）</h2>
+    <p class="pg-sub">
+      三区栅格：分类面板 320（默认收起，模型拿最大宽度）｜3D 舞台（自适应）｜详情/食养 400。
+      面板是真实的栅格列，<strong>不覆盖</strong>模型。这里展示「分类已展开 + 详情已打开」的最宽状态。
+    </p>
+    <div class="pg-frames">
+      <div class="pg-frame-wrap">
+        <div class="device-frame" style="width:1280px;height:800px">
+          <div class="device-page">
+            <div class="medical-disclaimer" role="note">
+              <strong>免责声明</strong> 本网站内容仅供日常小症状的穴位参考与学习了解，不能代替系统学习中医，也不能代替医院诊断、治疗或医生建议。如有不适，请及时就医。
+            </div>
+            <div class="app-root">
+              <div class="app-shell">
+                <header class="app-header">
+                  <div class="brand">
+                    <span class="brand-mark"><svg class="ic ic-lg"><use href="#i-pulse"/></svg></span>
+                    <span class="brand-text">
+                      <span class="brand-title">中医穴位图谱</span>
+                      <span class="brand-sub">3D Acupoint Atlas</span>
+                    </span>
+                  </div>
+                  <div class="segmented" role="group" aria-label="知识模式">
+                    <button aria-pressed="true"><span>穴位</span></button>
+                    <button aria-pressed="false"><span>食养</span></button>
+                  </div>
+                  <div class="header-search">
+                    <div class="search-wrap">
+                      <div class="field">
+                        <span class="field-icon"><svg class="ic ic-lg"><use href="#i-search"/></svg></span>
+                        <input type="search" placeholder="搜索穴位名称..." aria-label="搜索穴位" />
+                      </div>
+                    </div>
+                  </div>
+                  <div class="header-actions">
+                    <button class="icon-btn" aria-label="使用说明"><svg class="ic ic-lg"><use href="#i-book"/></svg></button>
+                    <button class="btn btn-secondary btn-sm is-active"><svg class="ic"><use href="#i-close"/></svg><span>收起分类</span></button>
+                  </div>
+                </header>
+
+                <div class="app-body left-open has-right-rail">
+                  <aside class="rail rail-left is-open">
+                    <div class="rail-head"><span class="rail-title">穴位分类</span></div>
+                    <div class="rail-scroll custom-scrollbar">
+                      <div class="category-panel">
+                        <div class="segmented segmented-block category-tabs" role="group" aria-label="分类方式">
+                          <button aria-pressed="true"><svg class="ic"><use href="#i-pin"/></svg><span>按部位</span></button>
+                          <button aria-pressed="false"><svg class="ic"><use href="#i-key"/></svg><span>按症状</span></button>
+                        </div>
+                        <div role="list" aria-label="按身体部位分类">
+                          <div role="listitem" class="category-group">
+                            <button class="category-toggle" aria-expanded="false">
+                              <span class="category-toggle-main"><span>🧠</span><span class="category-name">头面部</span></span>
+                              <span class="category-toggle-side"><span class="badge badge-neutral">45</span><svg class="ic category-chevron"><use href="#i-chev"/></svg></span>
+                            </button>
+                          </div>
+                          <div role="listitem" class="category-group is-open">
+                            <button class="category-toggle" aria-expanded="true">
+                              <span class="category-toggle-main"><span>🔙</span><span class="category-name">背部</span></span>
+                              <span class="category-toggle-side"><span class="badge badge-bamboo">78</span><svg class="ic category-chevron"><use href="#i-chev"/></svg></span>
+                            </button>
+                            <div class="category-points">
+                              <button class="point-row"><span class="point-row-name">大杼穴</span><span class="point-row-hint">缓解颈项强痛</span></button>
+                              <button class="point-row"><span class="point-row-name">肺俞穴</span><span class="point-row-hint">宣肺理气</span></button>
+                              <button class="point-row is-active"><span class="point-row-name">肝俞穴</span><span class="point-row-hint">疏肝理气</span></button>
+                              <button class="point-row"><span class="point-row-name">胆俞穴</span><span class="point-row-hint">清利肝胆</span></button>
+                              <button class="point-row"><span class="point-row-name">脾俞穴</span><span class="point-row-hint">健脾和胃</span></button>
+                            </div>
+                          </div>
+                          <div role="listitem" class="category-group">
+                            <button class="category-toggle" aria-expanded="false">
+                              <span class="category-toggle-main"><span>🫁</span><span class="category-name">胸腹部</span></span>
+                              <span class="category-toggle-side"><span class="badge badge-neutral">56</span><svg class="ic category-chevron"><use href="#i-chev"/></svg></span>
+                            </button>
+                          </div>
+                          <div role="listitem" class="category-group">
+                            <button class="category-toggle" aria-expanded="false">
+                              <span class="category-toggle-main"><span>💪</span><span class="category-name">上肢</span></span>
+                              <span class="category-toggle-side"><span class="badge badge-neutral">70</span><svg class="ic category-chevron"><use href="#i-chev"/></svg></span>
+                            </button>
+                          </div>
+                          <div role="listitem" class="category-group">
+                            <button class="category-toggle" aria-expanded="false">
+                              <span class="category-toggle-main"><span>🦵</span><span class="category-name">下肢</span></span>
+                              <span class="category-toggle-side"><span class="badge badge-neutral">68</span><svg class="ic category-chevron"><use href="#i-chev"/></svg></span>
+                            </button>
+                          </div>
+                        </div>
+                        <div class="category-foot"><svg class="ic"><use href="#i-bulb"/></svg><span>点击穴位名称可自动定位并查看详情</span></div>
+                      </div>
+                    </div>
+                  </aside>
+
+                  <main class="stage stage-scope">
+                    <div class="stage-mock" aria-hidden="true">
+                      <div class="stage-mock-figure"></div>
+                      <p class="stage-mock-note">3D 人体模型（human_body.glb）与 290 个穴位标记在此渲染</p>
+                    </div>
+                    <div class="stage-ui stage-ui-top-left">
+                      <div class="legend" role="note">
+                        <div class="legend-row"><span class="legend-dot"></span><span>穴位标记（点击查看详情）</span></div>
+                        <div class="legend-row"><span class="legend-dot is-active"></span><span>当前选中穴位</span></div>
+                        <div class="legend-row"><svg class="ic" style="width:12px;height:12px"><use href="#i-eye"/></svg><span>左键旋转 · 右键平移 · 滚轮缩放</span></div>
+                      </div>
+                    </div>
+                    <div class="stage-ui stage-ui-top-right">
+                      <div class="stage-toast" role="status">已定位到 <strong>肝俞穴</strong></div>
+                    </div>
+                    <div class="stage-ui stage-ui-bottom-left">
+                      <div class="stage-actions">
+                        <button class="btn btn-secondary btn-sm btn-on-stage"><svg class="ic"><use href="#i-crosshair"/></svg><span>重置视角</span></button>
+                        <button class="btn btn-secondary btn-sm btn-on-stage"><svg class="ic"><use href="#i-info"/></svg><span>隐藏图例</span></button>
+                      </div>
+                    </div>
+                  </main>
+
+                  <aside class="rail rail-right" aria-label="穴位详情">
+                    <div class="detail animate-fade-in">
+                      <header class="detail-head">
+                        <button class="icon-btn detail-close" aria-label="关闭详情面板"><svg class="ic ic-lg"><use href="#i-close"/></svg></button>
+                        <div class="detail-eyebrow"><svg class="ic" style="width:13px;height:13px"><use href="#i-pin"/></svg><span>背部</span></div>
+                        <h2 class="detail-name">肝俞穴</h2>
+                        <div class="detail-rule"></div>
+                      </header>
+                      <div class="detail-body custom-scrollbar">
+                        <div class="detail-stack">
+                          <p class="detail-lead">肝俞穴为足太阳膀胱经腧穴，是肝之背俞穴，常用于疏肝利胆、调理气血。</p>
+                          <div class="detail-card tone-location">
+                            <h4><svg class="ic" style="width:14px;height:14px"><use href="#i-pin"/></svg><span>穴位精准定位</span></h4>
+                            <p>在背部，第 9 胸椎棘突下，旁开 1.5 寸。</p>
+                          </div>
+                          <div class="detail-card tone-efficacy">
+                            <h4><svg class="ic" style="width:14px;height:14px"><use href="#i-sparkle"/></svg><span>日常功效</span></h4>
+                            <p>疏肝理气，养血明目；传统上用于胁痛、目疾、眩晕等日常小症状的穴位参考。</p>
+                          </div>
+                          <div class="detail-card tone-massage">
+                            <h4><svg class="ic" style="width:14px;height:14px"><use href="#i-hand"/></svg><span>按摩或艾灸手法</span></h4>
+                            <p>拇指指腹按揉 1–3 分钟，力度以酸胀为度；或艾条温和灸 10–15 分钟。</p>
+                          </div>
+                          <div class="detail-card tone-warning">
+                            <h4><svg class="ic" style="width:14px;height:14px"><use href="#i-warn"/></svg><span>禁忌症与注意事项</span></h4>
+                            <p>背部腧穴不宜自行深刺；皮肤破损、发热期、孕期请先咨询专业医师。</p>
+                          </div>
+                          <section class="card card-tight">
+                            <div class="section-head">
+                              <h3 class="section-title"><svg class="ic" style="width:14px;height:14px"><use href="#i-book"/></svg><span>相关分类</span></h3>
+                            </div>
+                            <div class="detail-chips">
+                              <span class="badge badge-bamboo">背部</span>
+                              <span class="badge badge-ochre">眼疲劳</span>
+                              <span class="badge badge-ochre">疲劳</span>
+                            </div>
+                            <p class="source-note" style="margin-top:var(--sp-3)">分类用于快速检索，不代表诊断结论。</p>
+                          </section>
+                          <section class="card card-tight">
+                            <div class="section-head">
+                              <h3 class="section-title"><svg class="ic" style="width:14px;height:14px"><use href="#i-info"/></svg><span>知识来源与说明</span></h3>
+                            </div>
+                            <p class="source-note">
+                              穴位名称、相对坐标与定位描述来自本项目内置的穴位数据集（共 290 条），坐标用于在 3D 人体模型上还原传统体表定位，不做医学测量用途。<br />
+                              <strong>按摩手法与禁忌为通用的传统养生描述，非个体化医嘱。</strong>
+                              本页内容仅供日常小症状的穴位参考与学习了解，不能代替医院诊断、治疗或医生建议。
+                            </p>
+                          </section>
+                        </div>
+                      </div>
+                      <footer class="detail-foot">
+                        <div class="detail-foot-row">
+                          <button class="btn btn-secondary btn-sm"><svg class="ic" style="width:14px;height:14px"><use href="#i-crosshair"/></svg>重置视角</button>
+                          <button class="detail-hint"><svg class="ic" style="width:13px;height:13px"><use href="#i-close"/></svg><span>点击背景、按 Esc 或右上角可关闭面板</span></button>
+                        </div>
+                      </footer>
+                    </div>
+                  </aside>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <p class="pg-cap"><b>桌面 1280px</b>：分类面板 + 舞台 + 详情卡三列并存，任意一栏都不遮挡模型。</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="pg-section">
+    <h2>四、移动端布局（390 × 844）</h2>
+    <p class="pg-sub">
+      页头折成两行（品牌/模式/操作 + 搜索独占一行，保证触控宽度）；舞台在上，
+      详情面板变成底部 sheet（≤46dvh），模型最小保留 140px，永不被面板压住。
+    </p>
+    <div class="pg-frames">
+      <div class="pg-frame-wrap">
+        <div class="device-frame" style="width:390px;height:844px">
+          <div class="device-page">
+            <div class="app-root">
+              <div class="app-shell">
+                <header class="app-header">
+                  <div class="brand">
+                    <span class="brand-mark"><svg class="ic ic-lg"><use href="#i-pulse"/></svg></span>
+                    <span class="brand-text"><span class="brand-title">中医穴位图谱</span></span>
+                  </div>
+                  <div class="segmented" role="group" aria-label="知识模式">
+                    <button aria-pressed="true"><span>穴位</span></button>
+                    <button aria-pressed="false"><span>食养</span></button>
+                  </div>
+                  <div class="header-actions">
+                    <button class="icon-btn" aria-label="使用说明"><svg class="ic ic-lg"><use href="#i-book"/></svg></button>
+                    <button class="btn btn-secondary btn-sm"><svg class="ic"><use href="#i-menu"/></svg><span>穴位分类</span></button>
+                  </div>
+                  <div class="header-search">
+                    <div class="search-wrap">
+                      <div class="field">
+                        <span class="field-icon"><svg class="ic ic-lg"><use href="#i-search"/></svg></span>
+                        <input type="search" placeholder="搜索穴位名称..." aria-label="搜索穴位" />
+                      </div>
+                    </div>
+                  </div>
+                </header>
+                <div class="app-body has-right-rail">
+                  <main class="stage stage-scope">
+                    <div class="stage-mock" aria-hidden="true">
+                      <div class="stage-mock-figure" style="width:76px;height:190px;border-radius:38px 38px 30px 30px"></div>
+                      <p class="stage-mock-note">3D 模型区域<br />单指旋转 · 双指缩放</p>
+                    </div>
+                    <div class="stage-ui stage-ui-bottom-left">
+                      <div class="stage-actions">
+                        <button class="btn btn-secondary btn-sm btn-on-stage"><svg class="ic"><use href="#i-crosshair"/></svg><span>重置视角</span></button>
+                      </div>
+                    </div>
+                  </main>
+                  <aside class="rail rail-right" aria-label="穴位详情">
+                    <div class="detail animate-fade-in">
+                      <header class="detail-head">
+                        <button class="icon-btn detail-close" aria-label="关闭详情面板"><svg class="ic ic-lg"><use href="#i-close"/></svg></button>
+                        <div class="detail-eyebrow"><svg class="ic" style="width:13px;height:13px"><use href="#i-pin"/></svg><span>背部</span></div>
+                        <h2 class="detail-name">肝俞穴</h2>
+                        <div class="detail-rule"></div>
+                      </header>
+                      <div class="detail-body custom-scrollbar">
+                        <div class="detail-stack">
+                          <div class="detail-card tone-location">
+                            <h4><svg class="ic" style="width:14px;height:14px"><use href="#i-pin"/></svg><span>穴位精准定位</span></h4>
+                            <p>在背部，第 9 胸椎棘突下，旁开 1.5 寸。</p>
+                          </div>
+                          <div class="detail-card tone-efficacy">
+                            <h4><svg class="ic" style="width:14px;height:14px"><use href="#i-sparkle"/></svg><span>日常功效</span></h4>
+                            <p>疏肝理气，养血明目。</p>
+                          </div>
+                        </div>
+                      </div>
+                      <footer class="detail-foot">
+                        <div class="detail-foot-row">
+                          <button class="btn btn-secondary btn-sm"><svg class="ic" style="width:14px;height:14px"><use href="#i-crosshair"/></svg>重置视角</button>
+                          <button class="detail-hint" style="flex:1 1 auto"><svg class="ic" style="width:13px;height:13px"><use href="#i-close"/></svg><span>按 Esc 关闭</span></button>
+                        </div>
+                      </footer>
+                    </div>
+                  </aside>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <p class="pg-cap"><b>手机 390px</b>：页头两行、舞台在上、详情为底部 sheet，触控热区 ≥44px。</p>
+      </div>
+
+      <div class="pg-frame-wrap">
+        <div class="device-frame" style="width:390px;height:844px">
+          <div class="device-page">
+            <div class="app-root">
+              <div class="app-shell">
+                <header class="app-header">
+                  <div class="brand">
+                    <span class="brand-mark"><svg class="ic ic-lg"><use href="#i-pulse"/></svg></span>
+                    <span class="brand-text"><span class="brand-title">中医穴位图谱</span></span>
+                  </div>
+                  <div class="segmented" role="group" aria-label="知识模式">
+                    <button aria-pressed="false"><span>穴位</span></button>
+                    <button aria-pressed="true"><span>食养</span></button>
+                  </div>
+                  <div class="header-actions">
+                    <button class="icon-btn" aria-label="使用说明"><svg class="ic ic-lg"><use href="#i-book"/></svg></button>
+                  </div>
+                  <div class="header-search" aria-hidden="true"></div>
+                </header>
+                <div class="app-body has-right-rail">
+                  <main class="stage stage-scope">
+                    <div class="stage-mock" aria-hidden="true">
+                      <div class="stage-mock-figure" style="width:76px;height:190px;border-radius:38px 38px 30px 30px"></div>
+                      <p class="stage-mock-note">3D 模型 + 食养空间锚点</p>
+                    </div>
+                    <div class="stage-ui stage-ui-top-left" style="max-width:min(70%,260px)">
+                      <div class="dietary-anchor"><span>◉ 肝 · 食养</span><small>空间锚点 · 肝俞穴</small></div>
+                    </div>
+                  </main>
+                  <aside class="rail rail-right" aria-label="食养知识">
+                    <aside class="dietary-panel">
+                      <header><span>食养知识 · 古籍阅读</span><button aria-label="关闭食养面板">×</button></header>
+                      <div class="dietary-scroll custom-scrollbar">
+                        <p class="dietary-notice">「肝」为中医藏象知识节点，不等同于现代解剖器官。该位置仅作为中医知识的空间导航锚点，并不表示食物在现代解剖意义上直接作用于该穴位或器官。</p>
+                        <h2>肝 · 传统食养</h2>
+                        <label>搜索食物<input type="search" placeholder="搜索食物名称" /></label>
+                        <p class="dietary-muted">3 条原文已核对 · 不代表现代疗效验证</p>
+                        <button class="dietary-card">
+                          <strong>小麦</strong>
+                          <small>养心安神 · 传统食养关联</small>
+                          <p>古籍中以小麦「养心气」，用于脏躁、烦热等传统记述。</p>
+                          <small>来源：《本草纲目》</small>
+                          <span>查看食物与出处 →</span>
+                        </button>
+                        <button class="dietary-card">
+                          <strong>粳米</strong>
+                          <small>健脾和胃 · 传统食养关联</small>
+                          <p>传统上以粳米「补中益气」，作为日常粥食基底。</p>
+                          <small>来源：《本草纲目》</small>
+                          <span>查看食物与出处 →</span>
+                        </button>
+                      </div>
+                    </aside>
+                  </aside>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <p class="pg-cap"><b>手机 390px · 食养模式</b>：食养面板沿用同一套 sheet 规则，知识关系与古籍原文不变。</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="pg-section">
+    <h2>五、食养面板：列表与古籍原文（桌面 400px）</h2>
+    <p class="pg-sub">
+      食养模块的数据来源（foods / zangfu_relations / dietary_sources）与知识关系、无障碍名称完全保持原样，
+      只把配色与排版并入统一设计语言。
+    </p>
+    <div class="pg-frames">
+      <div class="pg-frame-wrap">
+        <div class="device-frame" style="width:400px;height:700px">
+          <div class="app-root">
+            <aside class="rail rail-right" style="height:100%;box-shadow:none;border-radius:14px;overflow:hidden">
+              <aside class="dietary-panel">
+                <header><span>食养知识 · 古籍阅读</span><button aria-label="关闭食养面板">×</button></header>
+                <div class="dietary-scroll custom-scrollbar">
+                  <p class="dietary-notice">「肝」为中医藏象知识节点，不等同于现代解剖器官。该位置仅作为中医知识的空间导航锚点。</p>
+                  <h2>肝 · 传统食养</h2>
+                  <label>搜索食物<input type="search" placeholder="搜索食物名称" value="小麦" /></label>
+                  <p class="dietary-muted">3 条原文已核对 · 不代表现代疗效验证</p>
+                  <button class="dietary-card">
+                    <strong>小麦</strong>
+                    <small>养心安神 · 传统食养关联</small>
+                    <p>古籍中以小麦「养心气」，用于脏躁、烦热等传统记述。</p>
+                    <small>来源：《本草纲目》</small>
+                    <span>查看食物与出处 →</span>
+                  </button>
+                  <p class="dietary-empty" role="status">没有已核实的匹配条目。</p>
+                </div>
+              </aside>
+            </aside>
+          </div>
+        </div>
+        <p class="pg-cap"><b>列表视图</b>：食物卡 + 来源标注 + 空状态。</p>
+      </div>
+
+      <div class="pg-frame-wrap">
+        <div class="device-frame" style="width:400px;height:700px">
+          <div class="app-root">
+            <aside class="rail rail-right" style="height:100%;box-shadow:none;border-radius:14px;overflow:hidden">
+              <aside class="dietary-panel">
+                <header><span>食养知识 · 古籍阅读</span><button aria-label="关闭食养面板">×</button></header>
+                <div class="dietary-scroll custom-scrollbar">
+                  <button class="dietary-back">← 返回肝 · 传统食养</button>
+                  <h2>小麦</h2>
+                  <p>味甘、性平，传统上用于养心安神、除热止渴。</p>
+                  <section>
+                    <h3>传统食养关系</h3>
+                    <p>小麦入心，古籍记述其可养心气、安神除烦。</p>
+                    <button class="dietary-target">关联：肝 · 定位空间锚点</button>
+                    <details open>
+                      <summary>查看古籍原文 ·《本草纲目》</summary>
+                      <p>谷部第二十二卷 · 小麦</p>
+                      <blockquote>小麦，气味甘，微寒，无毒。主治除热，止燥渴，利小便，养肝气。</blockquote>
+                      <p>白话说明：小麦入心，古籍记述其可养心气、安神除烦。</p>
+                      <small>已与古籍原文逐字核对（source_verified）</small>
+                      <a href="#">查看来源电子文本 ↗</a>
+                    </details>
+                  </section>
+                  <h3>注意事项</h3>
+                  <p>对小麦过敏者不宜食用；本内容不构成个体化医嘱。</p>
+                  <h3>相关食养方</h3>
+                  <p class="dietary-placeholder" style="color:var(--ink-400);font-size:13px">本阶段未录入食养方。</p>
+                </div>
+              </aside>
+            </aside>
+          </div>
+        </div>
+        <p class="pg-cap"><b>详情视图</b>：返回 → 食物 → 传统食养关系 → 古籍原文折叠 → 注意事项。</p>
+      </div>
+
+      <div class="pg-frame-wrap">
+        <div class="device-frame" style="width:320px;height:700px">
+          <div class="app-root">
+            <aside class="rail rail-left" style="height:100%;border-radius:14px;overflow:hidden;border-right:1px solid var(--rice-400)">
+              <div class="rail-head"><span class="rail-title">穴位分类</span></div>
+              <div class="rail-scroll custom-scrollbar">
+                <div class="category-panel">
+                  <div class="segmented segmented-block category-tabs" role="group" aria-label="分类方式">
+                    <button aria-pressed="false"><svg class="ic"><use href="#i-pin"/></svg><span>按部位</span></button>
+                    <button aria-pressed="true"><svg class="ic"><use href="#i-key"/></svg><span>按症状</span></button>
+                  </div>
+                  <div role="list" aria-label="按症状分类">
+                    <div role="listitem" class="category-group is-open">
+                      <button class="category-toggle" aria-expanded="true">
+                        <span class="category-toggle-main"><span>🤕</span><span class="category-name">头痛</span><span class="category-desc">偏头痛、前额痛、后脑痛</span></span>
+                        <span class="category-toggle-side"><span class="badge badge-bamboo">8</span><svg class="ic category-chevron"><use href="#i-chev"/></svg></span>
+                      </button>
+                      <div class="category-points">
+                        <button class="point-row"><span class="point-row-name">百会穴</span><span class="point-row-hint">升阳举陷</span></button>
+                        <button class="point-row is-active"><span class="point-row-name">太阳穴</span><span class="point-row-hint">清热明目</span></button>
+                        <button class="point-row"><span class="point-row-name">风池穴</span><span class="point-row-hint">祛风解表</span></button>
+                        <button class="point-row"><span class="point-row-name">合谷穴</span><span class="point-row-hint">镇静止痛</span></button>
+                      </div>
+                    </div>
+                    <div role="listitem" class="category-group">
+                      <button class="category-toggle" aria-expanded="false">
+                        <span class="category-toggle-main"><span>😴</span><span class="category-name">失眠</span><span class="category-desc">入睡困难、多梦、易醒</span></span>
+                        <span class="category-toggle-side"><span class="badge badge-neutral">8</span><svg class="ic category-chevron"><use href="#i-chev"/></svg></span>
+                      </button>
+                    </div>
+                    <div role="listitem" class="category-group">
+                      <button class="category-toggle" aria-expanded="false">
+                        <span class="category-toggle-main"><span>💆</span><span class="category-name">颈肩痛</span><span class="category-desc">颈椎病、肩周炎、落枕</span></span>
+                        <span class="category-toggle-side"><span class="badge badge-neutral">8</span><svg class="ic category-chevron"><use href="#i-chev"/></svg></span>
+                      </button>
+                    </div>
+                  </div>
+                  <div class="category-foot"><svg class="ic"><use href="#i-bulb"/></svg><span>点击穴位名称可自动定位并查看详情</span></div>
+                </div>
+              </div>
+            </aside>
+          </div>
+        </div>
+        <p class="pg-cap"><b>分类导航</b>：按部位 / 按症状两个维度，展开后点击穴位名即定位并出详情。</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="pg-section">
+    <h2>六、使用说明浮层</h2>
+    <p class="pg-sub">文案与实际交互一致（鼠标映射已改为通用习惯），并补齐键盘操作说明——改造前完全没有键盘支持。</p>
+    <div class="pg-frames">
+      <div class="pg-frame-wrap">
+        <div class="device-frame" style="width:1280px;height:600px">
+          <div class="app-root">
+            <div class="app-shell">
+              <div class="app-body">
+                <main class="stage stage-scope">
+                  <div class="stage-mock" aria-hidden="true">
+                    <div class="stage-mock-figure" style="height:220px"></div>
+                    <p class="stage-mock-note">3D 模型区域</p>
+                  </div>
+                  <div class="stage-ui stage-ui-bottom-left">
+                    <div class="stage-actions">
+                      <button class="btn btn-secondary btn-sm btn-on-stage"><svg class="ic"><use href="#i-crosshair"/></svg><span>重置视角</span></button>
+                    </div>
+                  </div>
+                  <div style="position:absolute;right:var(--sp-4);bottom:var(--sp-4);z-index:var(--z-modal);max-width:360px">
+                    <div class="guide-panel" role="dialog" aria-label="使用说明">
+                      <div class="section-head">
+                        <h3 class="guide-title" style="margin-bottom:0"><svg class="ic ic-lg"><use href="#i-book"/></svg>使用说明</h3>
+                        <button class="icon-btn" aria-label="关闭使用说明"><svg class="ic"><use href="#i-close"/></svg></button>
+                      </div>
+                      <div class="guide-group">
+                        <h4><svg class="ic" style="width:14px;height:14px"><use href="#i-folder"/></svg>穴位分类</h4>
+                        <ul>
+                          <li><svg class="ic" style="width:14px;height:14px"><use href="#i-list"/></svg><span>点击页头「穴位分类」打开分类面板</span></li>
+                          <li><svg class="ic" style="width:14px;height:14px"><use href="#i-hash"/></svg><span>可切换「按部位」或「按症状」两种查找方式</span></li>
+                          <li><svg class="ic" style="width:14px;height:14px"><use href="#i-arrow"/></svg><span>展开分类后点击穴位名称，自动定位并显示详情</span></li>
+                        </ul>
+                      </div>
+                      <div class="guide-group">
+                        <h4><svg class="ic" style="width:14px;height:14px"><use href="#i-search"/></svg>搜索</h4>
+                        <ul>
+                          <li><svg class="ic" style="width:14px;height:14px"><use href="#i-arrow"/></svg><span>用 ↑ ↓ 在结果间移动，回车定位，Esc 清空</span></li>
+                        </ul>
+                      </div>
+                      <div class="guide-group">
+                        <h4><svg class="ic" style="width:14px;height:14px"><use href="#i-target"/></svg>鼠标操作</h4>
+                        <ul>
+                          <li><svg class="ic" style="width:14px;height:14px"><use href="#i-target"/></svg><span><strong>左键拖动</strong>：旋转视角</span></li>
+                          <li><svg class="ic" style="width:14px;height:14px"><use href="#i-target"/></svg><span><strong>右键拖动</strong>：平移画面</span></li>
+                          <li><svg class="ic" style="width:14px;height:14px"><use href="#i-target"/></svg><span><strong>滚轮</strong>：缩放</span></li>
+                        </ul>
+                      </div>
+                      <div class="guide-group">
+                        <h4><svg class="ic" style="width:14px;height:14px"><use href="#i-key"/></svg>键盘</h4>
+                        <ul>
+                          <li><svg class="ic" style="width:14px;height:14px"><use href="#i-key"/></svg><span>Esc 关闭面板并重置视角；Tab / Enter / Space 在控件间移动与激活</span></li>
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+                </main>
+              </div>
+            </div>
+          </div>
+        </div>
+        <p class="pg-cap"><b>使用说明</b>：右下角浮层，可 Esc / 右上角关闭。</p>
+      </div>
+    </div>
+  </section>
+
+</div>
+</body>
+</html>

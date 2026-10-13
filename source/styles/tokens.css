@@ -1,0 +1,121 @@
+/* =============================================================
+   设计 token —— 现代东方中医美学
+   米白 / 竹青 / 淡墨。所有颜色、间距、圆角、阴影、动效只在此定义，
+   组件样式一律引用变量，避免出现散落色值。
+   ============================================================= */
+
+:root {
+  /* ---------- 页面底：米白 ---------- */
+  --rice-50: #fdfcf9; /* 宣纸（卡片面） */
+  --rice-100: #f9f7f1;
+  --rice-200: #f7f4ed; /* 页面底色 */
+  --rice-300: #f0ebe0;
+  --rice-400: #e5decf; /* 分隔线 */
+  --rice-500: #d8cfbe;
+
+  /* ---------- 竹青（主强调） ---------- */
+  --bamboo-900: #1d352c;
+  --bamboo-800: #26473a;
+  --bamboo-700: #2f5c4b;
+  --bamboo-600: #3e6b5a; /* 主色 */
+  --bamboo-500: #4f8574;
+  --bamboo-400: #6fa08d;
+  --bamboo-300: #97bfad;
+  --bamboo-200: #c3ddd1;
+  --bamboo-100: #dceae3; /* 强调浅底 */
+  --bamboo-50: #eef5f1;
+
+  /* ---------- 淡墨（文字与中性） ---------- */
+  --ink-900: #1c1e1b; /* 正文 */
+  --ink-800: #2b2e2a;
+  --ink-700: #3a3d38;
+  --ink-600: #52564f;
+  --ink-500: #6b6f68; /* 次要文字 */
+  --ink-400: #8c9089;
+  --ink-300: #b3b7b0;
+  --ink-200: #d5d8d3;
+  --ink-100: #e3e5e1;
+
+  /* ---------- 朱砂（穴位标记 / 警示 / 禁忌） ---------- */
+  --cinnabar-700: #8f3223;
+  --cinnabar-600: #b4402f;
+  --cinnabar-500: #c9543f;
+  --cinnabar-200: #f0d3cc;
+  --cinnabar-100: #f7e6e2;
+
+  /* ---------- 赭石（功效 / 提示） ---------- */
+  --ochre-700: #8a5f16;
+  --ochre-600: #a8761d;
+  --ochre-100: #f6ecd9;
+
+  /* ---------- 3D 舞台：中性深色 ---------- */
+  --stage-950: #131518;
+  --stage-900: #181b1e;
+  --stage-850: #1e2126;
+  --stage-800: #25292e;
+  --stage-700: #343a40;
+  --stage-600: #4a5259;
+  --stage-text: #e8eaec;
+  --stage-text-dim: #9aa3aa;
+  --stage-line: rgba(255, 255, 255, 0.12);
+
+  /* ---------- 排版 ---------- */
+  --font-sans: system-ui, -apple-system, "Segoe UI", "PingFang SC",
+    "Hiragino Sans GB", "Microsoft YaHei", "Source Han Sans SC", sans-serif;
+  --font-serif: "Songti SC", "STSong", "SimSun", "Noto Serif SC",
+    "Source Han Serif SC", Georgia, serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+
+  /* ---------- 间距 ---------- */
+  --sp-1: 4px;
+  --sp-2: 8px;
+  --sp-3: 12px;
+  --sp-4: 16px;
+  --sp-5: 20px;
+  --sp-6: 24px;
+  --sp-8: 32px;
+  --sp-10: 40px;
+  --sp-12: 48px;
+
+  /* ---------- 圆角 ---------- */
+  --r-sm: 8px;
+  --r-md: 12px;
+  --r-lg: 16px;
+  --r-xl: 20px;
+  --r-pill: 999px;
+
+  /* ---------- 阴影（低对比、克制） ---------- */
+  --sh-sm: 0 1px 2px rgba(28, 30, 27, 0.06);
+  --sh-md: 0 4px 14px rgba(28, 30, 27, 0.08);
+  --sh-lg: 0 12px 32px rgba(28, 30, 27, 0.12);
+  --sh-stage: 0 10px 30px rgba(0, 0, 0, 0.35);
+
+  /* ---------- 动效 ---------- */
+  --dur-fast: 120ms;
+  --dur-base: 200ms;
+  --dur-slow: 320ms;
+  --ease-out: cubic-bezier(0.22, 0.61, 0.36, 1);
+  --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* ---------- 层级 ---------- */
+  --z-stage: 1;
+  --z-stage-ui: 20;
+  --z-drawer: 40;
+  --z-header: 50;
+  --z-modal: 60;
+  --z-toast: 70;
+
+  /* ---------- 布局尺寸 ---------- */
+  --header-h: 60px;
+  --rail-left-w: 320px;
+  --rail-right-w: 400px;
+  --sheet-h: 46dvh;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --dur-fast: 0ms;
+    --dur-base: 0ms;
+    --dur-slow: 0ms;
+  }
+}

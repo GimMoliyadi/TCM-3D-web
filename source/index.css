@@ -1,34 +1,10 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+/* 样式入口：按层聚合。
+   组件只写语义类名，颜色/间距/圆角/动效一律引用 styles/tokens.css 的变量。 */
+@import './styles/tokens.css';
+@import './styles/base.css';
+@import './styles/layout.css';
+@import './styles/components.css';
+@import './styles/panels.css';
 
-/* ---------- 自定义样式（从编译产物 static/css/main.2a2c8a65.css 还原） ---------- */
-
-.custom-scrollbar::-webkit-scrollbar {
-  width: 6px;
-}
-.custom-scrollbar::-webkit-scrollbar-track {
-  background: #0f172a80;
-  border-radius: 3px;
-}
-.custom-scrollbar::-webkit-scrollbar-thumb {
-  background: #64748b80;
-  border-radius: 3px;
-}
-.custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: #64748bcc;
-}
-
-@keyframes fadeInUp {
-  0% {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-.animate-fade-in-up {
-  animation: fadeInUp 0.3s ease-out;
-}
+/* 说明：原先此文件使用 Tailwind 工具类堆叠 + 零散色值，
+   现已改为 token + 语义类名。tailwind/postcss 配置保留在工程内以便后续按需使用。 */

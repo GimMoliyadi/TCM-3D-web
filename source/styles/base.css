@@ -1,0 +1,196 @@
+/* =============================================================
+   基础层 —— 重置、排版、可访问性基线
+   ============================================================= */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+}
+
+body {
+  font-family: var(--font-sans);
+  color: var(--ink-900);
+  background: var(--rice-200);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+h1,
+h2,
+h3,
+h4,
+p,
+figure,
+blockquote {
+  margin: 0;
+}
+
+ul,
+ol {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+button {
+  font: inherit;
+  color: inherit;
+  border: none;
+  background: none;
+  cursor: pointer;
+}
+
+input,
+select,
+textarea {
+  font: inherit;
+  color: inherit;
+}
+
+a {
+  color: var(--bamboo-700);
+  text-underline-offset: 2px;
+}
+
+img,
+svg,
+canvas {
+  display: block;
+  max-width: 100%;
+}
+
+/* ---------- 键盘可达性：统一焦点环 ---------- */
+:focus-visible {
+  outline: 2px solid var(--bamboo-500);
+  outline-offset: 2px;
+  border-radius: var(--r-sm);
+}
+
+.stage-scope :focus-visible {
+  outline-color: var(--bamboo-300);
+}
+
+/* 仅在键盘导航时显示跳转链接 */
+.skip-link {
+  position: absolute;
+  left: var(--sp-4);
+  top: -60px;
+  z-index: var(--z-toast);
+  padding: 10px 16px;
+  background: var(--bamboo-700);
+  color: #fff;
+  border-radius: var(--r-md);
+  transition: top var(--dur-base) var(--ease-out);
+}
+
+.skip-link:focus {
+  top: var(--sp-4);
+}
+
+/* 仅供读屏器 */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* 兼容类：既有测试与历史 DOM 使用 .cursor-pointer 标识可点击行 */
+.cursor-pointer {
+  cursor: pointer;
+}
+
+/* ---------- 自定义滚动条 ---------- */
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: var(--ink-300) transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: var(--ink-300);
+  border-radius: var(--r-pill);
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: var(--ink-400);
+  background-clip: content-box;
+}
+
+.stage-scope .custom-scrollbar {
+  scrollbar-color: var(--stage-600) transparent;
+}
+
+.stage-scope .custom-scrollbar::-webkit-scrollbar-thumb {
+  background: var(--stage-600);
+  background-clip: content-box;
+}
+
+/* ---------- 转场动画 ---------- */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-fade-in-up {
+  animation: fadeInUp var(--dur-slow) var(--ease-out) both;
+}
+
+.animate-fade-in {
+  animation: fadeIn var(--dur-slow) var(--ease-out) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
