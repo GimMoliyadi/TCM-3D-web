@@ -1,0 +1,13 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+
+# 数据库（运行时生成，不提交）
+backend/data/*.db
+
+# 系统
+.DS_Store
+Thumbs.db
