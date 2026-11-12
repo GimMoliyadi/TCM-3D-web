@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import * as THREE from 'three';
 
 import AppHeader from './components/layout/AppHeader';
@@ -12,7 +12,7 @@ import DietaryPanel from './components/dietary/DietaryPanel';
 import { LoadingState, ErrorState, Button } from './components/ui';
 import { useAcupoints } from './hooks/useAcupoints';
 import { useMediaQuery, BREAKPOINTS } from './hooks/useMediaQuery';
-import { searchAcupoints } from './data/repository';
+import { searchAcupointsAsync } from './data/repository';
 import { relationsForTarget, anchorFor } from './utils/dietaryRelations';
 
 import './components/dietary/dietary.css';
@@ -68,7 +68,27 @@ export default function App() {
 
   /* ---------------- 派生数据 ---------------- */
 
-  const results = useMemo(() => searchAcupoints(acupoints, term), [acupoints, term]);
+  // 搜索走后端（若配置）或本地（回退）。异步，避免后端慢时阻塞渲染。
+  const [results, setResults] = useState([]);
+  useEffect(() => {
+    let cancelled = false;
+    if (!term || !term.trim()) {
+      setResults([]);
+      return () => {
+        cancelled = true;
+      };
+    }
+    searchAcupointsAsync(acupoints, term)
+      .then((list) => {
+        if (!cancelled) setResults(list);
+      })
+      .catch(() => {
+        if (!cancelled) setResults([]);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [acupoints, term]);
 
   const dietaryAnchorPoint = useCallback(
     (target) => {

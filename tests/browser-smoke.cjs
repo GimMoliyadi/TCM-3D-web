@@ -2,6 +2,9 @@ const {chromium}=require(process.env.PLAYWRIGHT_MODULE || 'playwright');
 const assert=require('node:assert/strict');const path=require('node:path');const fs=require('node:fs');fs.mkdirSync('.test-output',{recursive:true});const {spawn}=require('child_process');
 (async()=>{const server=spawn('python',['-m','http.server','5199','--bind','127.0.0.1','--directory',path.resolve('dev-dist')]);let b;try{await new Promise(r=>setTimeout(r,800));
 for(const viewport of [{width:1280,height:900},{width:390,height:844}]){b=await chromium.launch({headless:true,executablePath:process.env.CHROMIUM_PATH || undefined,args:['--no-sandbox','--use-gl=angle','--use-angle=swiftshader','--enable-unsafe-swiftshader']});const p=await b.newPage({viewport});let errors=[];p.on('pageerror',e=>errors.push(e.message));await p.goto('http://127.0.0.1:5199/dev.html');await p.waitForTimeout(4500);
+// 首屏封面会挡住整个应用，必须先点「进入图谱」。
+// 按钮在 React 挂载完成前是 disabled 的，所以用 waitFor 等它变可点，别写死 sleep。
+const enter=p.getByRole('button',{name:'进入图谱',exact:true});await enter.waitFor({state:'visible',timeout:20000});await enter.click();await p.locator('#cover').waitFor({state:'detached',timeout:8000});
 await p.getByRole('button',{name:'食养',exact:true}).click();await p.getByRole('button',{name:'肝 · 食养',exact:true}).waitFor();await p.waitForTimeout(1800);await p.getByRole('button',{name:'肝 · 食养',exact:true}).click();await p.getByRole('heading',{name:'肝 · 传统食养',exact:true}).waitFor();assert.equal(await p.locator('.dietary-card').count(),3);
 await p.waitForTimeout(2500);await p.screenshot({path:`.test-output/dietary-${viewport.width}.png`});
 const canvas=await p.locator('canvas').boundingBox(), panel=await p.locator('.dietary-panel').boundingBox();assert(viewport.width>640?canvas.x+canvas.width<=panel.x+1:canvas.y+canvas.height<=panel.y+1);

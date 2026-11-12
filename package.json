@@ -6,7 +6,8 @@
     "dev": "vite --host 127.0.0.1",
     "build": "vite build",
     "test": "node --test tests/*.test.cjs",
-    "build:pages": "npm run build && node scripts/prepare-pages.cjs"
+    "sync:cover": "node scripts/sync-cover.cjs",
+    "build:pages": "npm run build && node scripts/sync-cover.cjs && node scripts/prepare-pages.cjs"
   },
   "dependencies": {
     "@react-three/drei": "9.88.17",

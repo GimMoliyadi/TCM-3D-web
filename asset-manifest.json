@@ -1,11 +1,11 @@
 {
   "files": {
-    "main.js": "./static/dietary/dev-BJn4gGcL.js",
-    "main.css": "./static/dietary/dev-C2ccZJbu.css",
+    "main.js": "./static/dietary/dev-BJG19a8g.js",
+    "main.css": "./static/dietary/dev-BX6rb9Sz.css",
     "index.html": "./index.html"
   },
   "entrypoints": [
-    "static/dietary/dev-C2ccZJbu.css",
-    "static/dietary/dev-BJn4gGcL.js"
+    "static/dietary/dev-BX6rb9Sz.css",
+    "static/dietary/dev-BJG19a8g.js"
   ]
 }

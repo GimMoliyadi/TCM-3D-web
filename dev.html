@@ -2,52 +2,259 @@
 /* 免责声明占一行高度，用 flex 列布局把它和 #root 分开排，
    避免 #root 顶着 100vh 被挤到视口外（原来底部按钮会被裁掉一截）。 */
 html,body{margin:0;padding:0;height:100%}
-body{overflow:hidden;background:#0f172a;display:flex;flex-direction:column}
+body{overflow:hidden;background:#0b0d0e;display:flex;flex-direction:column}
 .medical-disclaimer{flex:0 0 auto;padding:5px 14px;background:#111c33;border-bottom:1px solid #1e293b;color:#94a3b8;font:12px/1.6 system-ui,-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;text-align:center}
 .medical-disclaimer strong{color:#f59e0b;margin-right:6px}
 #root{flex:1 1 auto;min-height:0;width:100%;position:relative}
 #root > .fixed{position:absolute}
-.boot-loading{position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;background:#0f172a;color:#e2e8f0;font:16px/1.6 system-ui,-apple-system,sans-serif;text-align:center}
-.boot-loading strong{display:block;color:#67e8f9;font-size:20px;margin-bottom:8px}
-.boot-loading span{display:block;color:#94a3b8;font-size:14px}
-.boot-loading .spinner{width:40px;height:40px;margin:0 auto 16px;border:3px solid #1e293b;border-top:3px solid #22d3ee;border-radius:50%;animation:spin 1s linear infinite}
-@keyframes spin{to{transform:rotate(360deg)}}
-</style></head><body><div class="medical-disclaimer" role="note" aria-label="医疗免责声明"><strong>免责声明</strong> 本网站内容仅供日常小症状的穴位参考与学习了解，不能代替系统学习中医，也不能代替医院诊断、治疗或医生建议。如有不适，请及时就医。</div><div class="boot-loading" id="boot-loading"><div><div class="spinner"></div><strong>3D 穴位模型加载中</strong> <span>模型文件较大，首次打开可能需要几十秒，请稍等。</span></div></div><div id="root"></div><script type="module" src="/source/index.js"></script><script>
-/* 启动兜底：只有 React 真正挂载出内容才撤掉加载层；
-   否则（脚本报错 / 资源 404 / 网络或代理故障）给出可读提示，不留白屏。 */
+
+/* ==== COVER-CSS:START ==== */
+/* 这一段由 scripts/sync-cover.cjs 同步到 index.html，不要只改一边。
+   =============================================================
+   首屏封面（进入前）
+   必须在主样式表之前可用，故内联在此 —— 与下方启动兜底同一层。
+   色值取自 source/styles/tokens.css，因该表尚未加载，此处以局部变量落一份：
+     朱砂 --cinnabar-500 #c9543f / --cinnabar-200 #f0d3cc
+     竹青 --bamboo-400   #6fa08d
+     舞台 --stage-950    #131518 / --stage-text #e8eaec / --stage-text-dim #9aa3aa
+   ============================================================= */
+.cover{
+  --ck-cinnabar:#c9543f;--ck-cinnabar-200:#f0d3cc;--ck-bamboo-light:#6fa08d;
+  --ck-bg:#0a0c0e;--ck-ink:#e8eaec;--ck-dim:#9aa3aa;--ck-line:rgba(255,255,255,.12);
+  --ck-font:system-ui,-apple-system,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+  --ck-mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  --ck-ease:cubic-bezier(.22,.61,.36,1);
+  /* z-index 必须高于 16777271 —— 这是 @react-three/drei <Html> 的默认
+     zIndexRange[0]（Viewer 里的「正在加载 3D 模型」进度浮层走的就是它，
+     运行时实测内联 z-index ≈ 16409812）。给 9999 会被它压住。
+     免责声明条是 z-index:10000（layout.css），同被覆盖。 */
+  /* top 从免责声明条下方开始：封面只铺满 #root 那一块，
+     顶部保留法定免责声明，不遮挡。高度由启动脚本同步（窄屏会折行）。 */
+  position:fixed;left:0;right:0;bottom:0;top:var(--cover-top,34px);z-index:16777272;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  background:var(--ck-bg);color:var(--ck-ink);overflow:hidden;font-family:var(--ck-font);
+  transition:opacity .62s var(--ck-ease),transform .62s var(--ck-ease);
+}
+.cover.is-out{opacity:0;transform:scale(1.035);pointer-events:none}
+.cover-grid{position:absolute;inset:0;pointer-events:none;
+  background-image:linear-gradient(rgba(255,255,255,.026) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(255,255,255,.026) 1px,transparent 1px);
+  background-size:58px 58px;
+  -webkit-mask-image:radial-gradient(circle at 50% 45%,#000 0%,transparent 78%);
+  mask-image:radial-gradient(circle at 50% 45%,#000 0%,transparent 78%)}
+.cover-glow{position:absolute;inset:0;pointer-events:none;
+  background:radial-gradient(760px 500px at 50% 42%,rgba(201,84,63,.26),transparent 68%),
+    radial-gradient(880px 600px at 82% 86%,rgba(62,107,90,.22),transparent 70%),
+    radial-gradient(600px 440px at 10% 90%,rgba(201,84,63,.11),transparent 74%);
+  animation:ck-breathe 7s ease-in-out infinite}
+@keyframes ck-breathe{0%,100%{opacity:.84}50%{opacity:1}}
+.cover-main{position:relative;z-index:2;display:flex;flex-direction:column;align-items:center;
+  padding:0 26px;max-width:1240px;width:100%;text-align:center}
+.cover-eyebrow{margin:0 0 26px;font-size:11px;font-weight:700;letter-spacing:.34em;
+  text-transform:uppercase;color:var(--ck-bamboo-light);
+  animation:ck-rise .8s var(--ck-ease) both;animation-delay:.08s}
+.cover-title{
+  /* width:100% 必须显式给：父级是 column flex + align-items:center，
+     子项宽度否则会收缩成 max-content，导致窄屏下 flex-wrap 不触发而溢出。 */
+  margin:0;width:100%;display:flex;flex-wrap:wrap;justify-content:center;
+  gap:0 .3em;font-weight:800;
+  /* 字号上限同时受「容器宽度 / 10.6em」约束 ——
+     TCM ACUPOINT ATLAS 共 16 字符，按 0.62em 估宽 + 2 个 .3em 间距 ≈ 10.5em，
+     取 10.6 留余量，保证任何宽度下都放得下、不溢出。 */
+  font-size:min(100px,6.2vw,calc((100vw - 56px) / 10.6));
+  line-height:1.04;letter-spacing:-.028em}
+/* 三个词共用一条从左到右的连续色带（米白 → 朱砂），各自取其中一段，
+   避免每个词都从头渐变导致的色阶断层。 */
+.cover-title .w{-webkit-background-clip:text;background-clip:text;color:transparent;
+  animation:ck-rise .92s var(--ck-ease) both;animation-delay:calc(.2s + var(--i) * .11s)}
+.cover-title .w:nth-child(1){background-image:linear-gradient(101deg,#fbf8f4,#f1cbba)}
+.cover-title .w:nth-child(2){background-image:linear-gradient(101deg,#f1cbba,#e07a58)}
+.cover-title .w:nth-child(3){background-image:linear-gradient(101deg,#e07a58,#c44f30)}
+.cover-rule{width:min(420px,72vw);height:1px;margin:30px 0 24px;
+  background:linear-gradient(90deg,transparent,rgba(201,84,63,.75) 22%,rgba(201,84,63,.75) 78%,transparent);
+  transform-origin:center;animation:ck-rule .9s var(--ck-ease) both;animation-delay:.62s}
+.cover-sub{margin:0 0 40px;font-size:clamp(12.5px,1.6vw,15px);letter-spacing:.26em;
+  color:var(--ck-dim);animation:ck-fade .9s var(--ck-ease) both;animation-delay:.8s}
+/* 「还在加载」的如实说明：慢不等于失败，别把能打开的站点说成加载失败。 */
+.cover-hint{margin:22px 0 0;max-width:440px;font-size:12.5px;line-height:1.75;
+  color:var(--ck-dim);opacity:.9;animation:ck-fade .5s var(--ck-ease) both}
+.cover-enter{display:inline-flex;align-items:center;gap:11px;padding:14px 30px;
+  border-radius:999px;cursor:pointer;font-family:inherit;font-size:14.5px;font-weight:600;
+  letter-spacing:.1em;color:#fff;border:1px solid rgba(201,84,63,.55);
+  background:linear-gradient(180deg,rgba(201,84,63,.92),rgba(143,50,35,.92));
+  box-shadow:0 10px 30px rgba(201,84,63,.22),inset 0 1px 0 rgba(255,255,255,.16);
+  transition:transform .22s var(--ck-ease),box-shadow .22s var(--ck-ease),filter .22s var(--ck-ease);
+  animation:ck-fade .9s var(--ck-ease) both;animation-delay:.98s}
+.cover-enter:hover:not(:disabled){transform:translateY(-2px);filter:brightness(1.08);
+  box-shadow:0 16px 40px rgba(201,84,63,.32),inset 0 1px 0 rgba(255,255,255,.2)}
+.cover-enter:active:not(:disabled){transform:translateY(0)}
+.cover-enter:focus-visible{outline:2px solid var(--ck-cinnabar-200);outline-offset:3px}
+.cover-enter .ce-arrow{width:17px;height:17px;fill:none;stroke:currentColor;stroke-width:1.9;
+  stroke-linecap:round;stroke-linejoin:round;transition:transform .22s var(--ck-ease)}
+.cover-enter:hover:not(:disabled) .ce-arrow{transform:translateX(3px)}
+.cover-enter:disabled{cursor:progress;color:var(--ck-dim);background:rgba(255,255,255,.035);
+  border-color:var(--ck-line);box-shadow:none;
+  animation:ck-fade .9s var(--ck-ease) both,ck-blink 2.1s ease-in-out 1s infinite}
+.cover-enter:disabled .ce-arrow{display:none}
+.cover-brand{position:absolute;top:26px;left:30px;z-index:2;display:flex;align-items:center;gap:9px;
+  font-size:12px;font-weight:600;letter-spacing:.06em;color:var(--ck-dim);
+  animation:ck-fade 1s var(--ck-ease) both;animation-delay:1.15s}
+.cover-brand svg{width:19px;height:19px}
+.cover-brand b{color:var(--ck-ink);font-weight:700}
+.cover-tag{position:absolute;bottom:28px;left:32px;z-index:2;display:flex;align-items:center;gap:8px;
+  font-size:12px;letter-spacing:.06em;color:var(--ck-dim);
+  animation:ck-fade 1s var(--ck-ease) both;animation-delay:1.2s}
+.cover-tag .dot{width:6px;height:6px;border-radius:50%;background:var(--ck-cinnabar);
+  box-shadow:0 0 0 3px rgba(201,84,63,.18);animation:ck-blink 2.1s ease-in-out infinite}
+.cover-foot{position:absolute;bottom:28px;right:32px;z-index:2;display:flex;align-items:center;gap:15px;
+  font-family:var(--ck-mono);font-size:12px;letter-spacing:.03em;color:var(--ck-dim);
+  animation:ck-fade 1s var(--ck-ease) both;animation-delay:1.25s}
+.cover-foot b{color:var(--ck-cinnabar-200);font-weight:600}
+.cover-foot i{width:1px;height:11px;background:var(--ck-line);font-style:normal}
+@keyframes ck-rise{from{opacity:0;transform:translateY(24px);filter:blur(11px)}
+  to{opacity:1;transform:translateY(0);filter:blur(0)}}
+@keyframes ck-fade{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+@keyframes ck-rule{from{opacity:0;transform:scaleX(0)}to{opacity:1;transform:scaleX(1)}}
+@keyframes ck-blink{0%,100%{opacity:.62}50%{opacity:1}}
+@media (max-width:760px){
+  .cover-main{padding:0 18px}
+  /* 窄屏必须主动收字号：TCM ACUPOINT ATLAS 共 16 字符，
+     按 0.62em 估宽，字号超过容器宽度/10.6 就会顶出去。 */
+  .cover-title{font-size:min(46px,calc((100vw - 44px) / 10.6));gap:0 .26em;letter-spacing:-.02em}
+  .cover-eyebrow{font-size:10px;letter-spacing:.22em;margin-bottom:20px}
+  .cover-sub{letter-spacing:.16em;margin-bottom:32px}
+  .cover-rule{margin:22px 0 18px}
+  .cover-brand{top:20px;left:18px}
+  .cover-tag{bottom:62px;left:18px}
+  .cover-foot{bottom:22px;right:18px;justify-content:center;gap:10px;font-size:10.5px}
+  .cover-enter{padding:13px 24px;font-size:13.5px}
+}
+@media (prefers-reduced-motion:reduce){
+  .cover *{animation-duration:.01ms!important;animation-delay:0ms!important}
+  .cover-glow{animation:none}
+}
+.cover-error{max-width:520px;padding:0 24px;text-align:center}
+.cover-error .ce-icon{font-size:32px;line-height:1;margin-bottom:12px}
+.cover-error b{display:block;font-size:17px;font-weight:700;margin-bottom:8px;color:var(--ck-ink)}
+.cover-error span{display:block;font-size:13.5px;line-height:1.7;color:var(--ck-dim)}
+.cover-error button{margin-top:18px;background:var(--ck-cinnabar);color:#fff;border:none;
+  border-radius:10px;padding:10px 22px;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit}
+/* ==== COVER-CSS:END ==== */
+</style></head><body><div class="medical-disclaimer" role="note" aria-label="医疗免责声明"><strong>免责声明</strong> 本网站内容仅供日常小症状的穴位参考与学习了解，不能代替系统学习中医，也不能代替医院诊断、治疗或医生建议。如有不适，请及时就医。</div><!-- ==== COVER:START ==== --><div class="cover" id="cover" role="dialog" aria-label="TCM ACUPOINT ATLAS"><div class="cover-grid" aria-hidden="true"></div><div class="cover-glow" aria-hidden="true"></div><div class="cover-brand"><svg viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="50" r="40" fill="none" stroke="#3e6b5a" stroke-width="6" stroke-linecap="round"/><path d="M50 26v48M26 50h48" stroke="#c9543f" stroke-width="6" stroke-linecap="round"/></svg><span><b>TCM</b> 3D</span></div><div class="cover-main"><p class="cover-eyebrow">Traditional Chinese Medicine</p><h1 class="cover-title"><span class="w" style="--i:0">TCM</span> <span class="w" style="--i:1">ACUPOINT</span> <span class="w" style="--i:2">ATLAS</span></h1><div class="cover-rule" aria-hidden="true"></div><p class="cover-sub">中医穴位 · 3D 人体图谱</p><button class="cover-enter" id="cover-enter" type="button" disabled><span class="ce-label">模型加载中</span><svg class="ce-arrow" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h13M12 5.5 18.5 12 12 18.5"/></svg></button></div><div class="cover-tag"><span class="dot"></span>3D 实时渲染 · 非录制视频</div><div class="cover-foot"><span><b>290</b> 个穴位</span><i></i><span><b>3D</b> 人体模型</span><i></i><span><b>药食</b> 同源</span></div></div><!-- ==== COVER:END ==== --><div id="root"></div><script type="module" src="/source/index.js"></script><script>
+/* ==== COVER-JS:START ==== */
+/* 首屏封面 + 启动兜底。
+   封面负责「进入前」的门面，同时兼任加载指示：React 挂载出内容后按钮才可点；
+   若脚本报错 / 资源 404 / 网络或代理故障，直接在封面上给出可读提示，不留白屏。 */
 (function () {
-  var MAX_WAIT = 15000, t0 = Date.now();
+  /* 超时策略（2026-10-14 实测后改过一版）：
+     线上链路实测 23 KB/s，光 JS 主包 1.3MB 就要 56 秒 —— 原先「20 秒没挂载就报加载失败」
+     在这条链路上必然误报，站点明明能打开却被说成失败。
+     现在：真正的错误（资源 404 / 脚本抛错）才立刻报错；
+     单纯慢不算错 —— 超过 12 秒改成显示已等待秒数，硬上限放到 3 分钟。 */
+  var SLOW_HINT_MS = 12000, HARD_LIMIT_MS = 180000;
+  var t0 = Date.now(), entered = false, hint = null, timer = null;
+  var cover = document.getElementById("cover");
+  var btn = document.getElementById("cover-enter");
+  var label = btn ? btn.querySelector(".ce-label") : null;
+
+  /* 封面顶边 = 免责声明条的实际高度。
+     该条在窄屏会折成 2~3 行，高度不固定，所以运行时同步而不是写死。 */
+  function syncCoverTop() {
+    if (!cover) return;
+    var d = document.querySelector(".medical-disclaimer");
+    if (d) cover.style.setProperty("--cover-top", d.offsetHeight + "px");
+  }
+  syncCoverTop();
+  window.addEventListener("resize", syncCoverTop);
+  window.addEventListener("load", syncCoverTop);
+
   function mounted() {
     var r = document.getElementById("root");
     return !!(r && r.childElementCount > 0);
   }
-  function dropOverlay() {
-    var el = document.getElementById("boot-loading");
-    if (el && el.parentNode) el.parentNode.removeChild(el);
+  function stop() {
+    if (timer) { clearInterval(timer); timer = null; }
   }
+  function ready() {
+    if (!btn || entered) return;
+    btn.disabled = false;
+    if (label) label.textContent = "进入图谱";
+    if (hint && hint.parentNode) hint.parentNode.removeChild(hint);
+  }
+  function enter() {
+    if (entered || !btn || btn.disabled) return;
+    entered = true;
+    stop();
+    cover.classList.add("is-out");
+    setTimeout(function () {
+      if (cover && cover.parentNode) cover.parentNode.removeChild(cover);
+    }, 700);
+  }
+  if (btn) btn.addEventListener("click", enter);
+  document.addEventListener("keydown", function (e) {
+    if (entered || !btn || btn.disabled) return;
+    if (e.key === "Enter" || e.key === " " || e.key === "Spacebar") {
+      e.preventDefault();
+      enter();
+    }
+  });
+
+  /* 首个错误优先：资源 404 的信息比「等了 N 秒」具体得多，
+     别让后面到点的硬超时把前者覆盖掉。 */
+  var failedShown = false;
   function failed(msg) {
-    var el = document.getElementById("boot-loading");
-    if (!el) return;
-    el.innerHTML =
-      '<div style="max-width:520px;padding:0 24px">' +
-      '<div style="font-size:34px;line-height:1;margin-bottom:12px">\u26a0\ufe0f</div>' +
-      '<strong>3D 模型加载失败</strong>' +
+    if (failedShown) return;
+    failedShown = true;
+    stop();
+    var main = cover && cover.querySelector(".cover-main");
+    if (!main) return;
+    main.innerHTML =
+      '<div class="cover-error">' +
+      '<div class="ce-icon">\u26a0\ufe0f</div>' +
+      '<b>3D 模型加载失败</b>' +
       '<span>' + msg + '</span>' +
-      '<button onclick="location.reload()" style="margin-top:18px;background:#06b6d4;color:#062b33;' +
-      'border:none;border-radius:10px;padding:10px 22px;font-size:15px;font-weight:700;cursor:pointer">' +
-      '刷新重试</button></div>';
+      '<button type="button" onclick="location.reload()">刷新重试</button>' +
+      "</div>";
+    btn = null;
   }
+
   window.addEventListener("error", function (e) {
-    if (!mounted()) {
-      failed("页面脚本执行出错：" + (e.message || "未知错误") + "。若与网络或代理有关，请检查后刷新重试。");
+    if (mounted()) return;
+    var t = e.target;
+    // 资源加载失败（script / link / img 等）走的是冒泡到 window 的 error 事件，
+    // 这种事件没有 message，只报「未知错误」等于没说 —— 直接把文件名点出来。
+    if (t && t !== window && (t.tagName === "SCRIPT" || t.tagName === "LINK")) {
+      var url = t.src || t.href || "";
+      var name = url.split("/").pop().split("?")[0] || "未知资源";
+      failed("资源加载失败：" + name + "。请检查网络或代理后刷新重试。");
+      return;
     }
+    failed("页面脚本执行出错：" + (e.message || "未知错误") + "。若与网络或代理有关，请检查后刷新重试。");
   }, true);
-  var timer = setInterval(function () {
-    if (mounted()) { clearInterval(timer); dropOverlay(); return; }
-    if (Date.now() - t0 > MAX_WAIT) {
-      clearInterval(timer);
-      failed("等待超过 15 秒仍未完成加载。模型文件较大，请检查网络或代理后刷新重试。");
+
+  /* 慢 ≠ 错。超过 SLOW_HINT_MS 只在封面上如实报出已等待秒数，继续等；
+     只有到 HARD_LIMIT_MS 才认输，避免真的永久空转。 */
+  function showSlowHint(seconds) {
+    if (label && btn && btn.disabled) label.textContent = "仍在加载… 已等 " + seconds + " 秒";
+    if (!hint) {
+      var main = cover && cover.querySelector(".cover-main");
+      if (!main) return;
+      hint = document.createElement("p");
+      hint.className = "cover-hint";
+      hint.textContent = "首次打开需下载约 3 MB 模型与脚本，网络较慢时可能要一两分钟，请稍候。";
+      main.appendChild(hint);
     }
+  }
+
+  timer = setInterval(function () {
+    if (mounted()) { stop(); ready(); return; }
+    var waited = Date.now() - t0;
+    if (waited >= HARD_LIMIT_MS) {
+      failed("等待超过 " + Math.round(HARD_LIMIT_MS / 1000) + " 秒仍未完成加载。模型文件较大，请检查网络或代理后刷新重试。");
+      return;
+    }
+    if (waited >= SLOW_HINT_MS) showSlowHint(Math.round(waited / 1000));
   }, 400);
 })();
+/* ==== COVER-JS:END ==== */
 </script></body></html>
